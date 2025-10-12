@@ -24,9 +24,9 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 via-white to-green-50 text-gray-900">
+    // Updated: Dark background gradient and light text for the entire page
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-950 to-black text-gray-200 font-inter">
       
-
       {/* Dashboard Content */}
       <main className="max-w-7xl mx-auto px-6 py-16">
         <motion.div
@@ -35,15 +35,17 @@ const Dashboard = () => {
           transition={{ duration: 0.7 }}
           className="mb-12"
         >
-          <h1 className="text-4xl font-extrabold text-gray-800 mb-2">
-            Welcome back, <span className="text-green-700">Farmer!</span> {/* Updated to green-700 */}
+          {/* Updated text color to white and accent to green-400 */}
+          <h1 className="text-4xl font-extrabold text-white mb-2">
+            Welcome back, <span className="text-green-400">Farmer!</span>
           </h1>
-          <p className="text-gray-500">
+          {/* Updated text color for secondary text */}
+          <p className="text-gray-400">
             Here's an overview of your plant health monitoring
           </p>
         </motion.div>
 
-        {/* Stats */}
+        {/* Stats Cards */}
         <div className="grid md:grid-cols-4 gap-8 mb-12">
           {stats.map((s, i) => (
             <motion.div
@@ -51,15 +53,19 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="bg-white rounded-2xl shadow-md p-6 text-center border border-green-100 hover:shadow-lg hover:scale-105 transition-all"
+              // Dark card background, prominent shadow, and border
+              className="bg-gray-800 rounded-2xl shadow-xl p-6 text-center border border-gray-700 hover:shadow-green-500/30 hover:scale-[1.02] transition-all"
             >
-              <h2 className="text-4xl font-bold text-green-700 mb-2">
+              {/* Updated value color to bright green */}
+              <h2 className="text-4xl font-bold text-green-400 mb-2">
                 {s.value}
               </h2>
-              <p className="text-gray-600 font-medium">{s.label}</p>
+              {/* Updated label color */}
+              <p className="text-gray-400 font-medium">{s.label}</p>
               <p
                 className={`text-sm font-semibold mt-2 ${
-                  s.change.includes("+") ? "text-green-700" : "text-red-600" // Updated to green-700
+                  // Updated green for better dark contrast
+                  s.change.includes("+") ? "text-green-400" : "text-red-400" 
                 }`}
               >
                 {s.change}
@@ -73,10 +79,12 @@ const Dashboard = () => {
           {/* Recent Scans */}
           <div className="md:col-span-2">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">Recent Scans</h3>
+              {/* Updated header text color */}
+              <h3 className="text-xl font-bold text-white">Recent Scans</h3>
+              {/* Updated link color */}
               <a
                 href="#"
-                className="text-green-700 font-medium hover:underline" // Updated to green-700
+                className="text-green-400 font-medium hover:underline" 
               >
                 View All
               </a>
@@ -86,14 +94,16 @@ const Dashboard = () => {
                 <motion.div
                   key={i}
                   whileHover={{ scale: 1.02 }}
-                  className="bg-white rounded-xl p-4 flex justify-between items-center shadow-sm border border-gray-100 hover:shadow-md transition-all"
+                  // Dark card background and border
+                  className="bg-gray-800 rounded-xl p-4 flex justify-between items-center shadow-md border border-gray-700 hover:shadow-lg transition-all"
                 >
                   <div className="flex items-center space-x-4">
                     <div
+                      // Updated badge colors for dark theme contrast
                       className={`w-10 h-10 flex items-center justify-center rounded-full ${
                         scan.color === "green"
-                          ? "bg-green-100 text-green-700" // Updated to green-700
-                          : "bg-red-100 text-red-600"
+                          ? "bg-green-900/50 text-green-300"
+                          : "bg-red-900/50 text-red-300"
                       }`}
                     >
                       <svg
@@ -111,17 +121,20 @@ const Dashboard = () => {
                       </svg>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-800">
+                      {/* Updated text color */}
+                      <h4 className="font-semibold text-white">
                         {scan.name}
                       </h4>
-                      <p className="text-gray-500 text-sm">{scan.time}</p>
+                      {/* Updated secondary text color */}
+                      <p className="text-gray-400 text-sm">{scan.time}</p>
                     </div>
                   </div>
                   <span
-                    className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    // Updated badge colors for dark theme contrast
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
                       scan.color === "green"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-600"
+                        ? "bg-green-700/30 text-green-300"
+                        : "bg-red-700/30 text-red-300"
                     }`}
                   >
                     {scan.status}
@@ -136,25 +149,30 @@ const Dashboard = () => {
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
-            className="bg-white rounded-2xl shadow-md p-6 border border-gray-100"
+            // Dark card background and border
+            className="bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-700"
           >
-            <h3 className="text-xl font-bold mb-4">Quick Actions</h3>
-            {/* Changed from gradient to solid green-700 with darker hover */}
-            <button className="w-full bg-green-700 hover:bg-green-800 text-white font-semibold py-3 rounded-lg shadow-md mb-3 transition-transform hover:scale-105">
+            {/* Updated header text color */}
+            <h3 className="text-xl font-bold mb-4 text-white">Quick Actions</h3>
+            {/* New Scan button: Bright green */}
+            <button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg shadow-lg shadow-green-600/30 mb-3 transition-transform hover:scale-[1.02]">
               New Scan
             </button>
-            {/* Retained border and text color for consistency with accents */}
-            <button className="w-full border border-green-700 text-green-700 hover:bg-green-50 font-semibold py-3 rounded-lg transition-colors">
+            {/* View History button: Outline style */}
+            <button className="w-full border border-green-600 text-green-400 hover:bg-green-900/50 font-semibold py-3 rounded-lg transition-colors">
               View History
             </button>
 
             <div className="mt-6">
-              <h4 className="text-lg font-semibold mb-2">Health Tips</h4>
-              <ul className="space-y-2 text-gray-600 text-sm">
+              {/* Updated header text color */}
+              <h4 className="text-lg font-semibold mb-2 text-white">Health Tips</h4>
+              {/* Updated list item text color */}
+              <ul className="space-y-2 text-gray-400 text-sm">
                 {tips.map((tip, i) => (
-                  <li key={i} className="flex items-center space-x-2">
+                  <li key={i} className="flex items-start space-x-2">
                     <svg
-                      className="w-4 h-4 text-green-700" // Updated to green-700
+                      // Updated check icon color
+                      className="w-4 h-4 mt-1 text-green-400 flex-shrink-0" 
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"

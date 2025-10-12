@@ -10,11 +10,13 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-green-50 via-white to-green-50 text-gray-900">
-      {/* Logo Header */}
+    // Dark theme background with subtle gradient for depth (deep gray to black)
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-gray-950 to-black text-gray-200 ">
+      
+      {/* Logo Header (Top Left) */}
       <div className="absolute top-8 left-8 flex items-center space-x-2">
-        <Leaf className="text-green-700" />
-        <span className="text-xl font-semibold text-green-800">CERESAI</span>
+        <Leaf className="text-green-500" />
+        <span className="text-xl font-semibold text-white">CERESAI</span>
       </div>
 
       {/* Register Card */}
@@ -22,55 +24,60 @@ export default function RegisterPage() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="bg-white rounded-3xl shadow-lg border border-green-100 w-full max-w-md p-10"
+        // Card is dark gray, rounded, with a subtle border and shadow
+        className="bg-gray-800 rounded-3xl shadow-2xl shadow-green-900/50 border border-green-800 w-full max-w-md p-10"
       >
-        <h2 className="text-3xl font-bold text-center mb-2 text-green-800">
+        <h2 className="text-3xl font-bold text-center mb-2 text-green-400">
           Create Your Account
         </h2>
-        <p className="text-center text-gray-500 mb-8">
+        <p className="text-center text-gray-400 mb-8">
           Start your journey with AI-powered plant health monitoring
         </p>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium mb-1">Full Name</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300">Full Name</label>
             <input
               type="text"
               placeholder="John Farmer"
-              className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white shadow-sm focus:ring-2 focus:ring-green-600 focus:outline-none transition"
+              // Dark input field style
+              className="w-full px-4 py-3 rounded-xl border border-gray-700 bg-gray-900 text-white shadow-inner focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none transition"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300">Email</label>
             <input
               type="email"
               placeholder="farmer@example.com"
-              className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white shadow-sm focus:ring-2 focus:ring-green-600 focus:outline-none transition"
+              // Dark input field style
+              className="w-full px-4 py-3 rounded-xl border border-gray-700 bg-gray-900 text-white shadow-inner focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none transition"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Password</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300">Password</label>
             <input
               type="password"
               placeholder="••••••••"
-              className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white shadow-sm focus:ring-2 focus:ring-green-600 focus:outline-none transition"
+              // Dark input field style
+              className="w-full px-4 py-3 rounded-xl border border-gray-700 bg-gray-900 text-white shadow-inner focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none transition"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">
+            <label className="block text-sm font-medium mb-1 text-gray-300">
               Confirm Password
             </label>
             <input
               type="password"
               placeholder="••••••••"
-              className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white shadow-sm focus:ring-2 focus:ring-green-600 focus:outline-none transition"
+              // Dark input field style
+              className="w-full px-4 py-3 rounded-xl border border-gray-700 bg-gray-900 text-white shadow-inner focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none transition"
               required
             />
           </div>
@@ -79,12 +86,13 @@ export default function RegisterPage() {
             type="submit"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className="w-full py-3 bg-green-700 hover:bg-green-800 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+            // Vibrant primary green button
+            className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl shadow-lg shadow-green-600/30 transition-all duration-300"
           >
             Create Account
           </motion.button>
 
-          <div className="text-center text-sm text-gray-500">
+          <div className="text-center text-sm text-gray-500 pt-2">
             Already have an account?
           </div>
 
@@ -92,7 +100,8 @@ export default function RegisterPage() {
             type="button"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className="w-full py-3 border border-green-200 rounded-xl hover:bg-green-50 text-green-700 font-medium transition"
+            // Secondary button with border accent
+            className="w-full py-3 border border-green-700 rounded-xl hover:bg-gray-700 text-green-400 font-medium transition"
           >
             Sign In
           </motion.button>
@@ -100,7 +109,7 @@ export default function RegisterPage() {
       </motion.div>
 
       {/* Footer Info */}
-      <div className="mt-8 text-sm text-gray-500 text-center">
+      <div className="mt-8 text-sm text-gray-600 text-center">
         © 2025 CeresAI – Empowering Smart Farming with AI
       </div>
     </div>
