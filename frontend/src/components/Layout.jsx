@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { Leaf } from "lucide-react";
 
 const Layout = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Add this
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
 
   const navItems = [
@@ -12,11 +13,9 @@ const Layout = ({ children }) => {
     { name: "Scan", path: "/scan" },
     { name: "History", path: "/history" },
     { name: "About", path: "/about" },
-   
   ];
 
   const handleLogout = () => {
-    // Clear user session / token here
     setIsLoggedIn(false);
     navigate("/");
   };
@@ -27,22 +26,14 @@ const Layout = ({ children }) => {
       <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-green-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-md">
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <span className="text-2xl font-extrabold text-green-600 tracking-wide">
+            
+            {/* ✅ Proper Logo Placement */}
+            <div
+              onClick={() => navigate("/")}
+              className="flex items-center space-x-2 cursor-pointer"
+            >
+              <Leaf className="text-green-700 w-6 h-6" />
+              <span className="text-xl font-semibold text-green-800">
                 CERESAI
               </span>
             </div>
@@ -56,8 +47,8 @@ const Layout = ({ children }) => {
                   className={({ isActive }) =>
                     `font-medium transition-colors ${
                       isActive
-                        ? "text-green-600"
-                        : "text-gray-700 hover:text-green-600"
+                        ? "text-green-700"
+                        : "text-gray-700 hover:text-green-700"
                     }`
                   }
                 >
@@ -72,19 +63,22 @@ const Layout = ({ children }) => {
                 <>
                   <button
                     onClick={() => navigate("/login")}
-                    className="text-gray-700 hover:text-green-600 transition-colors"
+                    className="text-gray-700 hover:text-green-700 transition-colors"
                   >
                     Login
                   </button>
-                  <button  onClick={() => navigate("/register")} className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-lg font-semibold shadow-md transition-transform hover:scale-105">
-                    Sign Up
+                  <button
+                    onClick={() => navigate("/register")}
+                    className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-lg font-semibold shadow-md transition-transform hover:scale-105"
+                  >
+                    Signup
                   </button>
                 </>
               ) : (
                 <>
                   <button
                     onClick={() => navigate("/profile")}
-                    className="text-gray-700 hover:text-green-600 transition-colors"
+                    className="text-gray-700 hover:text-green-700 transition-colors"
                   >
                     <svg
                       className="w-5 h-5"
@@ -114,7 +108,7 @@ const Layout = ({ children }) => {
             <div className="md:hidden flex items-center">
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="text-gray-700 hover:text-green-600 focus:outline-none"
+                className="text-gray-700 hover:text-green-700 focus:outline-none"
               >
                 <svg
                   className="w-6 h-6"
@@ -153,8 +147,8 @@ const Layout = ({ children }) => {
                   className={({ isActive }) =>
                     `block px-4 py-2 rounded-md font-medium transition-colors ${
                       isActive
-                        ? "bg-green-100 text-green-600"
-                        : "text-gray-700 hover:bg-green-50 hover:text-green-600"
+                        ? "bg-green-100 text-green-700"
+                        : "text-gray-700 hover:bg-green-50 hover:text-green-700"
                     }`
                   }
                 >
@@ -168,19 +162,22 @@ const Layout = ({ children }) => {
                   <>
                     <button
                       onClick={() => navigate("/login")}
-                      className="text-gray-700 hover:text-green-600 transition-colors"
+                      className="text-gray-700 hover:text-green-700 transition-colors"
                     >
                       Login
                     </button>
-                    <button   onClick={() => navigate("/register")} className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-lg font-semibold shadow-md transition-transform hover:scale-105">
-                      Sign Up
+                    <button
+                      onClick={() => navigate("/register")}
+                      className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-lg font-semibold shadow-md transition-transform hover:scale-105"
+                    >
+                      Get Started
                     </button>
                   </>
                 ) : (
                   <>
                     <button
                       onClick={() => navigate("/profile")}
-                      className="text-gray-700 hover:text-green-600 transition-colors"
+                      className="text-gray-700 hover:text-green-700 transition-colors"
                     >
                       Profile
                     </button>
@@ -201,43 +198,91 @@ const Layout = ({ children }) => {
       {/* Page Content */}
       <main>{children}</main>
 
-      {/* Footer */}
+      {/* ✅ Footer (Fixed Logo Position) */}
       <footer className="bg-black text-gray-400 mt-20">
-        <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row justify-between space-y-8 md:space-y-0">
+        <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0">
+          
+          {/* Footer Logo */}
           <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
-              <svg
-                className="w-6 h-6 text-white"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <span className="text-2xl font-bold text-white">CERESAI</span>
+            <Leaf className="text-green-500 w-6 h-6" />
+            <span className="text-xl font-semibold text-green-400">
+              CERESAI
+            </span>
           </div>
 
-          <div>
+          <div className="text-center md:text-left">
             <p>Email: support@ceresai.com</p>
             <p>Phone: +1 234 567 890</p>
             <p>123 Green Lane, Agro City</p>
           </div>
 
-          <div className="flex space-x-5">
-            {["Twitter", "Facebook", "Instagram", "LinkedIn"].map((s, i) => (
-              <a
-                key={i}
-                href="#"
-                className="hover:text-green-400 transition-colors"
-              >
-                {s}
-              </a>
-            ))}
-          </div>
+          {/* ✅ Social Icons */}
+<div className="flex space-x-6">
+  <a
+    href="https://twitter.com/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-gray-400 hover:text-green-300 transition-colors"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-5 h-5"
+      fill="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path d="M22.46 6c-.77.35-1.6.59-2.46.69a4.22 4.22 0 001.85-2.33 8.27 8.27 0 01-2.65 1.02A4.15 4.15 0 0016.1 4a4.16 4.16 0 00-4.17 4.17c0 .33.04.65.11.96A11.79 11.79 0 013 5.16a4.17 4.17 0 001.29 5.56 4.09 4.09 0 01-1.89-.52v.05a4.16 4.16 0 003.34 4.08 4.23 4.23 0 01-1.88.07 4.18 4.18 0 003.9 2.9A8.36 8.36 0 012 19.54a11.79 11.79 0 006.29 1.84c7.55 0 11.68-6.26 11.68-11.68v-.53A8.36 8.36 0 0024 5.5a8.19 8.19 0 01-2.36.65 4.12 4.12 0 001.82-2.27z" />
+    </svg>
+  </a>
+
+  <a
+    href="https://facebook.com/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-gray-400 hover:text-green-300 transition-colors"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-5 h-5"
+      fill="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path d="M22 12a10 10 0 10-11.5 9.9v-7H8v-3h2.5V9.5a3.5 3.5 0 013.7-3.9c1.06 0 2.2.18 2.2.18v2.4h-1.2a1.4 1.4 0 00-1.6 1.5V12H18l-.5 3h-2.9v7A10 10 0 0022 12z" />
+    </svg>
+  </a>
+
+  <a
+    href="https://instagram.com/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-gray-400 hover:text-green-300 transition-colors"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-5 h-5"
+      fill="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path d="M7 2C4.24 2 2 4.24 2 7v10c0 2.76 2.24 5 5 5h10c2.76 0 5-2.24 5-5V7c0-2.76-2.24-5-5-5H7zm10 2c1.65 0 3 1.35 3 3v10a3 3 0 01-3 3H7a3 3 0 01-3-3V7c0-1.65 1.35-3 3-3h10zm-5 3.5a5.5 5.5 0 105.5 5.5A5.51 5.51 0 0012 7.5zm0 9a3.5 3.5 0 113.5-3.5A3.5 3.5 0 0112 16.5zm4.75-8.88a1.12 1.12 0 11-1.12-1.12 1.12 1.12 0 011.12 1.12z" />
+    </svg>
+  </a>
+
+  <a
+    href="https://linkedin.com/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-gray-400 hover:text-green-300 transition-colors"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-5 h-5"
+      fill="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path d="M4.98 3.5A2.5 2.5 0 107.48 6 2.5 2.5 0 004.98 3.5zM3 8h4v13H3zM9 8h3.6v1.7h.05A3.95 3.95 0 0116 8c3.1 0 3.67 2 3.67 4.5V21h-4v-6.5c0-1.55-.03-3.55-2.17-3.55S11 12.77 11 14.4V21H7V8z" />
+    </svg>
+  </a>
+</div>
+
         </div>
         <div className="text-center text-gray-500 text-sm pb-4">
           © {new Date().getFullYear()} CERESAI. All rights reserved.

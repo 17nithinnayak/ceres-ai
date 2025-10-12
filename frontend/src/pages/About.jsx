@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 const About = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 via-white to-green-50 text-gray-900">
-   
+      
 
       {/* Main */}
       <main className="max-w-7xl mx-auto px-6 py-16 space-y-28">
@@ -18,7 +18,8 @@ const About = () => {
         >
           <h1 className="text-4xl md:text-5xl font-extrabold mb-4">
             Empowering Farmers{" "}
-            <span className="text-green-600">With AI Technology</span>
+            {/* Updated from green-600 to green-700 */}
+            <span className="text-green-700">With AI Technology</span>
           </h1>
           <p className="text-gray-600 max-w-3xl mx-auto text-lg">
             CERESAI combines cutting-edge artificial intelligence with
@@ -54,8 +55,9 @@ const About = () => {
             transition={{ duration: 0.8 }}
             className="bg-green-100 rounded-3xl h-80 flex items-center justify-center shadow-lg"
           >
-            <div className="w-24 h-24 border-8 border-green-400 rounded-full flex items-center justify-center animate-pulse">
-              <div className="w-8 h-8 bg-green-500 rounded-full" />
+            {/* Updated border and inner circle to green-700 for deep color consistency */}
+            <div className="w-24 h-24 border-8 border-green-700 rounded-full flex items-center justify-center animate-pulse">
+              <div className="w-8 h-8 bg-green-700 rounded-full" />
             </div>
           </motion.div>
         </motion.section>
@@ -91,7 +93,8 @@ const About = () => {
                 key={i}
                 className="bg-white rounded-2xl shadow-lg p-8 hover:shadow-2xl transition-all"
               >
-                <div className="w-16 h-16 bg-green-500 text-white text-3xl flex items-center justify-center rounded-full mx-auto mb-4">
+                {/* Updated background to green-700 */}
+                <div className="w-16 h-16 bg-green-700 text-white text-3xl flex items-center justify-center rounded-full mx-auto mb-4">
                   {val.icon}
                 </div>
                 <h4 className="text-xl font-bold mb-2">{val.title}</h4>
@@ -160,7 +163,8 @@ const About = () => {
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="bg-green-600 text-white rounded-3xl py-16 px-8 text-center shadow-xl"
+          /* Removed the comment line that was causing the error */
+          className="bg-green-700 text-white rounded-3xl py-16 px-8 text-center shadow-xl"
         >
           <h3 className="text-3xl font-bold mb-4">Join Our Community</h3>
           <p className="text-lg mb-8 opacity-90">
@@ -172,9 +176,6 @@ const About = () => {
           </button>
         </motion.section>
       </main>
-
-      {/* Footer */}
-      
     </div>
   );
 };

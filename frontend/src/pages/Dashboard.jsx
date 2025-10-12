@@ -25,7 +25,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 via-white to-green-50 text-gray-900">
-   
+      
 
       {/* Dashboard Content */}
       <main className="max-w-7xl mx-auto px-6 py-16">
@@ -36,7 +36,7 @@ const Dashboard = () => {
           className="mb-12"
         >
           <h1 className="text-4xl font-extrabold text-gray-800 mb-2">
-            Welcome back, <span className="text-green-600">Farmer!</span>
+            Welcome back, <span className="text-green-700">Farmer!</span> {/* Updated to green-700 */}
           </h1>
           <p className="text-gray-500">
             Here's an overview of your plant health monitoring
@@ -59,7 +59,7 @@ const Dashboard = () => {
               <p className="text-gray-600 font-medium">{s.label}</p>
               <p
                 className={`text-sm font-semibold mt-2 ${
-                  s.change.includes("+") ? "text-green-500" : "text-red-500"
+                  s.change.includes("+") ? "text-green-700" : "text-red-600" // Updated to green-700
                 }`}
               >
                 {s.change}
@@ -76,7 +76,7 @@ const Dashboard = () => {
               <h3 className="text-xl font-bold">Recent Scans</h3>
               <a
                 href="#"
-                className="text-green-600 font-medium hover:underline"
+                className="text-green-700 font-medium hover:underline" // Updated to green-700
               >
                 View All
               </a>
@@ -92,7 +92,7 @@ const Dashboard = () => {
                     <div
                       className={`w-10 h-10 flex items-center justify-center rounded-full ${
                         scan.color === "green"
-                          ? "bg-green-100 text-green-600"
+                          ? "bg-green-100 text-green-700" // Updated to green-700
                           : "bg-red-100 text-red-600"
                       }`}
                     >
@@ -139,10 +139,12 @@ const Dashboard = () => {
             className="bg-white rounded-2xl shadow-md p-6 border border-gray-100"
           >
             <h3 className="text-xl font-bold mb-4">Quick Actions</h3>
-            <button className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 rounded-lg shadow-md mb-3 transition-transform hover:scale-105">
+            {/* Changed from gradient to solid green-700 with darker hover */}
+            <button className="w-full bg-green-700 hover:bg-green-800 text-white font-semibold py-3 rounded-lg shadow-md mb-3 transition-transform hover:scale-105">
               New Scan
             </button>
-            <button className="w-full border border-green-500 text-green-700 hover:bg-green-50 font-semibold py-3 rounded-lg transition-colors">
+            {/* Retained border and text color for consistency with accents */}
+            <button className="w-full border border-green-700 text-green-700 hover:bg-green-50 font-semibold py-3 rounded-lg transition-colors">
               View History
             </button>
 
@@ -152,7 +154,7 @@ const Dashboard = () => {
                 {tips.map((tip, i) => (
                   <li key={i} className="flex items-center space-x-2">
                     <svg
-                      className="w-4 h-4 text-green-500"
+                      className="w-4 h-4 text-green-700" // Updated to green-700
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"

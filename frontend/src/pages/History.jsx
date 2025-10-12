@@ -56,8 +56,7 @@ const History = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 via-white to-green-50 text-gray-900">
-    
-    
+      
 
       {/* Main */}
       <main className="max-w-7xl mx-auto px-6 py-16">
@@ -82,8 +81,9 @@ const History = () => {
               key={i}
               className="flex items-center gap-2 bg-white border border-green-200 rounded-xl px-4 py-2 hover:shadow-md transition-all"
             >
+              {/* Updated filter icon color to green-700 */}
               <svg
-                className="w-4 h-4 text-green-600"
+                className="w-4 h-4 text-green-700"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -136,9 +136,10 @@ const History = () => {
               >
                 <svg
                   className={`w-6 h-6 ${
+                    // Updated icon color to green-700 and red-700 for consistency
                     scan.color === "green"
-                      ? "text-green-600"
-                      : "text-red-600"
+                      ? "text-green-700"
+                      : "text-red-700"
                   }`}
                   fill="none"
                   stroke="currentColor"
@@ -165,8 +166,9 @@ const History = () => {
               </div>
               <div className="w-full bg-gray-100 h-2 rounded-full">
                 <div
+                  // Updated confidence bar color to green-700 and red-700
                   className={`h-2 rounded-full ${
-                    scan.color === "green" ? "bg-green-500" : "bg-red-500"
+                    scan.color === "green" ? "bg-green-700" : "bg-red-700"
                   }`}
                   style={{ width: `${scan.confidence}%` }}
                 ></div>
@@ -183,14 +185,15 @@ const History = () => {
           whileHover={{ scale: 1.05 }}
           className="mt-12 flex justify-center"
         >
-          <button className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md transition">
+          {/* Updated button to solid green-700 with darker hover */}
+          <button className="px-6 py-3 bg-green-700 hover:bg-green-800 text-white font-semibold rounded-lg shadow-md transition">
             Load More
           </button>
         </motion.div>
       </main>
 
       {/* Footer */}
-     
+      
     </div>
   );
 };
