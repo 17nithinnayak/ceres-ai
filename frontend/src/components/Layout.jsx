@@ -5,16 +5,17 @@ import { Leaf } from "lucide-react";
 
 const Layout = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
-  // Set to true for initial dark theme styling of logged-in state (Profile/Logout)
   const [isLoggedIn, setIsLoggedIn] = useState(false); 
   const navigate = useNavigate();
 
   const navItems = [
     { name: "Home", path: "/" },
+     { name: "Scan", path: "/scan" },
     { name: "Dashboard", path: "/dashboard" },
-    { name: "Scan", path: "/scan" },
     { name: "History", path: "/history" },
-    { name: "About", path: "/about" },
+    {name:"Schemes", path:"/schemes"},
+    //  { name: "About", path: "/about" }
+     {name:"Market-Analysis",path:"/market"}
   ];
 
   const handleLogout = () => {
@@ -23,15 +24,12 @@ const Layout = ({ children }) => {
   };
 
   return (
-    // Set the overall background to a dark, deep gray/black
     <div className="bg-gray-950 min-h-screen">
-      {/* Header */}
-      {/* Updated: Solid background, stronger shadow, and defined green border for a "mild box" look */}
+      
 <header className="bg-gray-800 shadow-[0_4px_15px_rgba(0,0,0,0.3)] sticky top-0 z-50 border-b-2 border-grey-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             
-            {/* Logo: Bright green text and icon for visibility */}
             <div
               onClick={() => navigate("/")}
               className="flex items-center space-x-2 cursor-pointer"
@@ -42,7 +40,6 @@ const Layout = ({ children }) => {
               </span>
             </div>
 
-            {/* Navigation (Desktop) */}
             <nav className="hidden md:flex items-center space-x-8">
               {navItems.map((item, idx) => (
                 <NavLink
@@ -60,8 +57,7 @@ const Layout = ({ children }) => {
                 </NavLink>
               ))}
             </nav>
-
-            {/* Right Buttons (Desktop) */}
+             
             <div className="hidden md:flex items-center space-x-4">
               {!isLoggedIn ? (
                 <>
@@ -71,7 +67,6 @@ const Layout = ({ children }) => {
                   >
                     Login
                   </button>
-                  {/* Primary button with vibrant green */}
                   <button
                     onClick={() => navigate("/register")}
                     className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold shadow-md transition-transform hover:scale-105"
@@ -109,7 +104,6 @@ const Layout = ({ children }) => {
               )}
             </div>
 
-            {/* Mobile Hamburger */}
             <div className="md:hidden flex items-center">
               <button
                 onClick={() => setIsOpen(!isOpen)}
@@ -141,9 +135,7 @@ const Layout = ({ children }) => {
             </div>
           </div>
 
-          {/* Mobile Menu */}
           {isOpen && (
-            // Darker background for mobile menu
             <div className="md:hidden mt-2 space-y-2 pb-4 border-b border-gray-700 bg-gray-900">
               {navItems.map((item, idx) => (
                 <NavLink
@@ -162,7 +154,6 @@ const Layout = ({ children }) => {
                 </NavLink>
               ))}
 
-              {/* Mobile Right Buttons */}
               <div className="flex space-x-4 px-4 pt-2 border-t border-gray-800">
                 {!isLoggedIn ? (
                   <>

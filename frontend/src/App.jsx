@@ -10,6 +10,10 @@ import History from "./pages/History";
 import About from "./pages/About";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register";
+import SubsidyCheckerPage from "./pages/SubsidyChecker.jsx";
+import MarketAnalysisPage from "./pages/MarketAnalysis.jsx";
+import FarmSetupPage from "./pages/FarmSetupPage..jsx";
+// Example using React Router
 
 function App() {
   return (
@@ -20,6 +24,7 @@ function App() {
         {/* Routes without Layout */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+         <Route path="/farmsetup" element={<FarmSetupPage />} />
 
         {/* Routes with Layout */}
         <Route
@@ -38,6 +43,13 @@ function App() {
             </Layout>
           }
         />
+        
+<Route path="/schemes" element={
+   <Layout>
+    <SubsidyCheckerPage/>
+   </Layout>
+  
+  } />
         <Route
           path="/dashboard"
           element={
@@ -62,6 +74,13 @@ function App() {
             </Layout>
           }
         />
+        <Route path="/market" element={
+<Layout>
+  <MarketAnalysisPage />
+</Layout>
+          
+
+          } />
         <Route
           path="/about"
           element={

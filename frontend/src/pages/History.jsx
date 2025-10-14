@@ -55,7 +55,6 @@ const History = () => {
   ];
 
   return (
-    // Updated: Dark background gradient and light text
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-950 to-black text-gray-200 font-inter">
       
       {/* Main Content */}
