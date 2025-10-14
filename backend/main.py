@@ -1,37 +1,54 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from. import models
-from.database import engine
-from. import models, schemas, crud, security
-from.database import engine, get_db
-from sqlalchemy.orm import Session
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
+# backend/main.py
 
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.orm import Session
+from pydantic import BaseModel
+from datetime import datetime
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+import models, schemas, crud, security, agent, database
+from database import engine, get_db
+
+
+# This command tells SQLAlchemy to create all the tables if they don't exist
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+# --- Middleware ---
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],    
+    allow_headers=["*"],
 )
 
+# --- Pydantic Models for Request Body ---
+class AnalysisRequest(BaseModel):
+    userId: str
+    farmId: str
+    image: str
+    userQuery: str
+    location: dict
+
+# --- Authentication Endpoints ---
 @app.post("/api/v1/users/", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    
     user_dict = {"email": user.email, "password": user.password}
     return crud.create_user(db=db, user_data=user_dict)
 
 @app.post("/api/v1/token")
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = crud.get_user_by_email(db, email=form_data.username) # OAuth2 form uses 'username' for the email field
+    user = crud.get_user_by_email(db, email=form_data.username)
     if not user or not security.verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -41,33 +58,42 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
     access_token = security.create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer"}
 
-mock_analysis_response = {
-    "analysisId": "mock-analysis-12345",
-    "status": "ONLINE_COMPLETE",
-    "timestamp": "2025-10-26T14:30:00Z",
-    "imageUrl": "https://storage.googleapis.com/ceres-ai-mock-images/sample_leaf.jpg",
-    "offlineResult": {
-        "diseaseName": "Coffee Leaf Rust",
-        "confidenceScore": 0.85
-    },
-    "onlineResult": {
-        "diseaseName": "Coffee Leaf Rust (Hemileia vastatrix)",
-        "severity": "Medium",
-        "summary": "This is a moderate case of Coffee Leaf Rust, likely accelerated by recent high humidity. Immediate action is required to prevent it from spreading.",
-        "recommendedActions":"",
-        "scientificReason": "Coffee Leaf Rust is a fungus that thrives in humid conditions. The orange powdery spots are spores that spread easily through wind and rain, infecting nearby healthy plants.",
-        "preventativeMeasures": [
-            "Ensure balanced plant nutrition, especially with potassium, to improve plant resistance.",
-            "Maintain proper shade (40-50%) to avoid stress on the plants.",
-            "Improve air circulation by managing bush density and pruning."
-        ]
-    }
-}
-
-@app.post("/api/v1/analyze")
-async def analyze_image():
-    return mock_analysis_response 
-
+# --- Root Endpoint for testing ---
 @app.get("/")
-async def root():
-    return {"message": "Ceres AI Mock Server is running."}
+async def read_root():
+    return {"message": "Ceres AI Backend is running!"}
+
+# --- REAL Analysis Endpoint ---
+@app.post("/api/v1/analyze")
+async def analyze_image(request: AnalysisRequest, db: Session = Depends(get_db)):
+    """
+    This is the REAL endpoint. It calls our agentic AI core to perform
+    a full, context-aware analysis.
+    """
+    # For now, we'll use mock farm details. Later, we'll fetch this from the DB.
+    mock_farm_details = {
+        "location": "Ponnampet, Kodagu",
+        "crop_type": "Robusta Coffee"
+    }
+    
+    # Call the agentic function from agent.py
+    online_result = agent.run_analysis_agent(
+        image_base64=request.image,
+        user_query=request.userQuery,
+        farm_details=mock_farm_details
+    )
+
+    # We can construct the final JSON response here
+    final_response = {
+        "analysisId": f"real-analysis-{os.urandom(4).hex()}",
+        "status": "ONLINE_COMPLETE",
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "imageUrl": "URL_will_be_added_later", # TODO: Implement image storage
+        "offlineResult": { # This would come from the client, but we mock it here for now
+            "diseaseName": "Unknown",
+            "confidenceScore": 0.0
+        },
+        "onlineResult": online_result
+    }
+    
+    return final_response
