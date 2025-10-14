@@ -3,9 +3,7 @@ import React, { useState, useEffect } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { Leaf, TrendingUp, Monitor, Zap, Droplet, Thermometer, Sprout, CloudSun, Cpu, Shield, Globe } from "lucide-react";
 
-// --- HOOKS AND HELPER COMPONENTS ---
 
-// Hook for counter animation (simulates data loading)
 const useCounter = (endValue, duration = 2000) => {
   const [count, setCount] = useState(0);
   const controls = useAnimation();
@@ -26,9 +24,7 @@ const useCounter = (endValue, duration = 2000) => {
 
     controls.start(() => requestAnimationFrame(animate));
     
-    // Cleanup function to stop animation loop
     return () => {
-        // Stop the animation if the component unmounts
         startTime = null; 
     };
 
@@ -37,10 +33,8 @@ const useCounter = (endValue, duration = 2000) => {
   return count;
 };
 
-// Component for a single animated metric card
 const MetricCard = ({ icon: Icon, value, label, delay }) => {
   const displayedValue = useCounter(value);
-  // Determines suffix based on label content
   const suffix = label.includes('Increase') ? '%' : (label.includes('Accuracy') ? '%' : '+');
 
   const cardVariants = {
@@ -65,23 +59,18 @@ const MetricCard = ({ icon: Icon, value, label, delay }) => {
   );
 };
 
-// --- MAIN APP COMPONENT ---
 
 const App = () => {
-  // Removed 'images' array
 
   return (
-    // Dark theme with a subtle dark green gradient
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-950 to-black text-gray-200">
       <main className="max-w-7xl mx-auto px-6 py-16">
-        {/* Hero */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          {/* Pill Badge: Dark background, light text */}
           <div className="inline-flex items-center bg-gray-800 text-green-400 px-4 py-2 rounded-full font-semibold text-sm mb-6">
             <Leaf className="w-4 h-4 mr-2" /> AI-Powered Plant Diagnosis
           </div>
@@ -95,14 +84,12 @@ const App = () => {
             online.
           </p>
           <div className="flex justify-center space-x-4">
-            {/* Main button: Vibrant green, with a lift and shadow on hover */}
             <motion.button 
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold shadow-lg transition-transform hover:shadow-green-500/50">
               Get Started Free →
             </motion.button>
-            {/* Learn More button: Subtle outline with hover effect */}
             <motion.button 
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -114,7 +101,6 @@ const App = () => {
        <section className="py-12 md:py-16 bg-gray-950/50 rounded-3xl mb-20 border border-gray-800 shadow-[0_4px_30px_rgba(0,0,0,0.2)]">
   <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
-    {/* Section Header */}
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -133,7 +119,6 @@ const App = () => {
       </p>
     </motion.div>
 
-    {/* Features Grid */}
     <div className="grid md:grid-cols-3 gap-10">
       {[
         {
@@ -173,10 +158,7 @@ const App = () => {
 
 
        
-        {/* Features - Realistic Effect Added */}
-        
-
-        {/* How It Works - Realistic Effect Added */}
+      
         <section className="text-center mb-20">
           <h3 className="text-3xl font-bold mb-8 text-white">How It Works</h3>
           <div className="grid md:grid-cols-4 gap-8">
