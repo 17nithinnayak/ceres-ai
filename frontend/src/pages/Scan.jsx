@@ -1,7 +1,6 @@
-/* eslint-disable no-unused-vars */
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Camera, Upload, Mic } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Scan = (props) => {
   const {
@@ -11,7 +10,13 @@ const Scan = (props) => {
     onVoiceNote = () => {},
   } = props;
 
-  // Motion variants
+  const [isRecording, setIsRecording] = useState(false);
+
+  const handleMicClick = () => {
+    setIsRecording((prev) => !prev);
+    onVoiceNote();
+  };
+
   const containerVariants = {
     hidden: { opacity: 0, y: 40 },
     visible: {
@@ -61,23 +66,79 @@ const Scan = (props) => {
 
           {/* Action Buttons */}
           <motion.div className="flex gap-4" variants={itemVariants}>
-            {[{ icon: Camera, label: "Camera", onClick: onCamera },
-              { icon: Upload, label: "Upload", onClick: onUpload },
-              { icon: Mic, label: "Voice Note", onClick: onVoiceNote }].map(
-              ({ icon: Icon, label, onClick }, idx) => (
-                <motion.button
-                  key={idx}
-                  onClick={onClick}
-                  className="flex flex-col items-center justify-center w-28 h-28 bg-white border border-gray-200 rounded-2xl hover:border-gray-300 hover:shadow-md transition-all"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  variants={itemVariants}
-                >
-                  <Icon size={28} className="text-gray-700 mb-2" />
-                  <span className="text-sm text-gray-700">{label}</span>
-                </motion.button>
-              )
-            )}
+            {/* Camera */}
+            <motion.button
+              onClick={onCamera}
+              className="flex flex-col items-center justify-center w-28 h-28 bg-white border border-gray-200 rounded-2xl hover:border-gray-300 hover:shadow-md transition-all"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Camera size={28} className="text-gray-700 mb-2" />
+              <span className="text-sm text-gray-700">Camera</span>
+            </motion.button>
+
+            {/* Upload */}
+            <motion.button
+              onClick={onUpload}
+              className="flex flex-col items-center justify-center w-28 h-28 bg-white border border-gray-200 rounded-2xl hover:border-gray-300 hover:shadow-md transition-all"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Upload size={28} className="text-gray-700 mb-2" />
+              <span className="text-sm text-gray-700">Upload</span>
+            </motion.button>
+
+            {/* Voice Note with Sound Wave Animation */}
+            <motion.button
+              onClick={handleMicClick}
+              className={`relative flex flex-col items-center justify-center w-28 h-28 rounded-2xl border transition-all ${
+                isRecording
+                  ? "bg-green-50 border-green-400 shadow-lg"
+                  : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-md"
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {/* Animated Waves */}
+              <AnimatePresence>
+                {isRecording && (
+                  <>
+                    {[...Array(3)].map((_, i) => (
+                      <motion.span
+                        key={i}
+                        className="absolute w-20 h-20 border-2 border-green-400 rounded-full"
+                        initial={{ scale: 0.6, opacity: 0.8 }}
+                        animate={{
+                          scale: 1.8,
+                          opacity: 0,
+                        }}
+                        transition={{
+                          duration: 1.5,
+                          repeat: Infinity,
+                          delay: i * 0.4,
+                          ease: "easeOut",
+                        }}
+                      />
+                    ))}
+                  </>
+                )}
+              </AnimatePresence>
+
+              {/* Mic Icon */}
+              <Mic
+                size={28}
+                className={`mb-2 z-10 transition-colors ${
+                  isRecording ? "text-green-600" : "text-gray-700"
+                }`}
+              />
+              <span
+                className={`text-sm z-10 ${
+                  isRecording ? "text-green-600 font-semibold" : "text-gray-700"
+                }`}
+              >
+                {isRecording ? "Listening..." : "Voice Note"}
+              </span>
+            </motion.button>
           </motion.div>
 
           {/* Start Diagnosis */}
