@@ -1,5 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from. import models
+from.database import engine
+from. import models, schemas, crud, security
+from.database import engine, get_db
+from sqlalchemy.orm import Session
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -10,6 +19,27 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],    
 )
+
+@app.post("/api/v1/users/", response_model=schemas.User)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_email(db, email=user.email)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    user_dict = {"email": user.email, "password": user.password}
+    return crud.create_user(db=db, user_data=user_dict)
+
+@app.post("/api/v1/token")
+def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = crud.get_user_by_email(db, email=form_data.username) # OAuth2 form uses 'username' for the email field
+    if not user or not security.verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token = security.create_access_token(data={"sub": user.email})
+    return {"access_token": access_token, "token_type": "bearer"}
 
 mock_analysis_response = {
     "analysisId": "mock-analysis-12345",
