@@ -122,15 +122,16 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Leaf } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import supabase from "../supabaseClient"; // import Supabase client
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    fullName: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -138,33 +139,33 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
 
+    setLoading(true);
+
     try {
-      console.log("Creating user account...");
-      // Example backend call
-      const res = await fetch("/api/v1/users/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.fullName,
-          email: formData.email,
-          password: formData.password,
-        }),
+      // Use Supabase auth signUp
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
       });
 
-      if (res.ok) {
-        console.log("User created successfully");
-        navigate("/farm-setup"); // Redirect to Step 2
+      if (error) {
+        alert(`Registration failed: ${error.message}`);
       } else {
-        alert("Registration failed. Try again.");
+        console.log("User registered:", data);
+        alert("Account created successfully! Please check your email to confirm.");
+        navigate("/farmsetup"); // redirect after signup
       }
     } catch (err) {
-      console.error("Error:", err);
-      alert("Something went wrong.");
+      console.error("Error signing up:", err);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -189,45 +190,66 @@ export default function RegisterPage() {
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {["fullName", "email", "password", "confirmPassword"].map((field, i) => (
-            <div key={i}>
-              <label className="block text-sm font-medium mb-1 text-gray-300">
-                {field === "fullName"
-                  ? "Full Name"
-                  : field === "email"
-                  ? "Email"
-                  : field === "password"
-                  ? "Password"
-                  : "Confirm Password"}
-              </label>
-              <input
-                name={field}
-                type={field.includes("password") ? "password" : field === "email" ? "email" : "text"}
-                placeholder={
-                  field === "fullName"
-                    ? "John Farmer"
-                    : field === "email"
-                    ? "farmer@example.com"
-                    : "••••••••"
-                }
-                value={formData[field]}
-                onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border border-gray-700 bg-gray-900 text-white shadow-inner focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none transition"
-                required
-              />
-            </div>
-          ))}
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-300">
+              Email
+            </label>
+            <input
+              name="email"
+              type="email"
+              autoComplete="email"
+              placeholder="farmer@example.com"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full px-4 py-3 rounded-xl border border-gray-700 bg-gray-900 text-white shadow-inner focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none transition"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-300">
+              Password
+            </label>
+            <input
+              name="password"
+              type="password"
+              autoComplete="new-password"
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full px-4 py-3 rounded-xl border border-gray-700 bg-gray-900 text-white shadow-inner focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none transition"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-300">
+              Confirm Password
+            </label>
+            <input
+              name="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              placeholder="••••••••"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className="w-full px-4 py-3 rounded-xl border border-gray-700 bg-gray-900 text-white shadow-inner focus:border-green-600 focus:ring-1 focus:ring-green-600 focus:outline-none transition"
+              required
+            />
+          </div>
 
           <motion.button
             type="submit"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl shadow-lg shadow-green-600/30 transition-all duration-300"
+            disabled={loading}
+            className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl shadow-lg shadow-green-600/30 transition-all duration-300 disabled:opacity-50"
           >
-            Next →
+            {loading ? "Creating Account..." : "Create Account"}
           </motion.button>
         </form>
       </motion.div>
+
       <div className="mt-8 text-sm text-gray-600 text-center">
         © 2025 CeresAI – Empowering Smart Farming with AI
       </div>
