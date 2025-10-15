@@ -118,4 +118,5 @@ def read_analysis_history(user_id: int, db: Session = Depends(get_db)):
     history = crud.get_analysis_history_for_user(db, user_id=user_id)
     if not history:
         raise HTTPException(status_code=404, detail="No analysis history found for this user.")
+
     return history
