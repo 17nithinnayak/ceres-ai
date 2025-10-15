@@ -7,13 +7,12 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime
 import os
-from dotenv import load_dotenv
+import crud, schemas
+from typing import List
 
-load_dotenv()
-
-import models, schemas, crud, security, agent, database
+# Use direct imports since we run from the backend folder
+import models, schemas, crud, security, agent
 from database import engine, get_db
-
 
 # This command tells SQLAlchemy to create all the tables if they don't exist
 models.Base.metadata.create_all(bind=engine)
@@ -37,14 +36,36 @@ class AnalysisRequest(BaseModel):
     userQuery: str
     location: dict
 
+
+# Get all farms for logged-in user
+@app.post("/api/v1/farms/", response_model=schemas.Farm)
+def create_farm_for_user(farm: schemas.FarmCreate, user_id: int, db: Session = Depends(get_db)):
+    # In a real production app, you'd get user_id from the auth token.
+    # For the hackathon, passing it as a query parameter is simpler and faster.
+    return crud.create_user_farm(db=db, farm=farm, user_id=user_id)
+
+
+@app.get("/api/v1/farms/{user_id}", response_model=List[schemas.Farm])
+def read_farms_for_user(user_id: int, db: Session = Depends(get_db)):
+    farms = crud.get_farms_by_user(db, user_id=user_id)
+    return farms
+
+
 # --- Authentication Endpoints ---
 @app.post("/api/v1/users/", response_model=schemas.User)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+def create_user_endpoint(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    user_dict = {"email": user.email, "password": user.password}
+
+    user_dict = {
+        "email": user.email,
+        "name": user.name,          # <-- include name
+        "password": user.password
+    }
     return crud.create_user(db=db, user_data=user_dict)
+
+
 
 @app.post("/api/v1/token")
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
@@ -63,27 +84,39 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
 async def read_root():
     return {"message": "Ceres AI Backend is running!"}
 
+
 # --- REAL Analysis Endpoint ---
 @app.post("/api/v1/analyze")
 async def analyze_image(request: AnalysisRequest, db: Session = Depends(get_db)):
     """
-    This is the REAL endpoint. It calls our agentic AI core to perform
-    a full, context-aware analysis.
+    This is the DYNAMIC endpoint. It fetches real farm data to provide
+    a context-aware analysis.
     """
-    # For now, we'll use mock farm details. Later, we'll fetch this from the DB.
-    mock_farm_details = {
-        "location": "Ponnampet, Kodagu",
-        "crop_type": "Robusta Coffee"
+    # --- Step 1: Fetch the real farm details from the database ---
+    try:
+        farm_id_int = int(request.farmId)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid Farm ID format. Must be an integer.")
+
+    db_farm = crud.get_farm_by_id(db, farm_id=farm_id_int)
+    if db_farm is None:
+        raise HTTPException(status_code=404, detail=f"Farm with ID {farm_id_int} not found.")
+
+    # Convert the SQLAlchemy model to a dictionary for the agent
+    farm_details = {
+        "location": db_farm.location,
+        "crop_type": db_farm.crop_type,
+        "name": db_farm.name
     }
     
-    # Call the agentic function from agent.py
+    # --- Step 2: Call the agentic function from agent.py ---
     online_result = agent.run_analysis_agent(
         image_base64=request.image,
         user_query=request.userQuery,
-        farm_details=mock_farm_details
+        farm_details=farm_details
     )
 
-    # We can construct the final JSON response here
+    # --- Step 3: Construct and return the final response ---
     final_response = {
         "analysisId": f"real-analysis-{os.urandom(4).hex()}",
         "status": "ONLINE_COMPLETE",
