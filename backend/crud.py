@@ -32,3 +32,17 @@ def get_farm_by_id(db: Session, farm_id: int):
     Retrieves a single farm by its unique ID.
     """
     return db.query(models.Farm).filter(models.Farm.id == farm_id).first()
+
+def create_analysis_result(db: Session, result: schemas.AnalysisResultCreate, user_id: int, farm_id: int):
+    db_result = models.AnalysisResult(
+        **result.model_dump(), 
+        owner_id=user_id, 
+        farm_id=farm_id
+    )
+    db.add(db_result)
+    db.commit()
+    db.refresh(db_result)
+    return db_result
+
+def get_analysis_history_for_user(db: Session, user_id: int, skip: int = 0, limit: int = 100):
+    return db.query(models.AnalysisResult).filter(models.AnalysisResult.owner_id == user_id).order_by(models.AnalysisResult.timestamp.desc()).offset(skip).limit(limit).all()
