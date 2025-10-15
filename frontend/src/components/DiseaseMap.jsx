@@ -1,63 +1,116 @@
-// src/components/CoorgDiseaseMap.jsx
-import React, { useMemo } from 'react';
-import { MapContainer, TileLayer } from 'react-leaflet';
-import { HeatmapLayer } from 'react-leaflet-heatmap-layer-v3';import { MapPin } from 'lucide-react'; 
-import coorgHotspots from '../Data/hotspots';
-import 'leaflet/dist/leaflet.css'; // Essential Leaflet CSS
+/* eslint-disable no-unused-vars */
+// // DiseaseMap.jsx
+// import React from "react";
+// import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+// import "leaflet/dist/leaflet.css";
+// import L from "leaflet";
+// import pointerIconImg from "../assets/icon.png"; // use your pointer image
 
-const COORG_CENTER = [12.42, 75.74]; // Madikeri, Coorg center
-const INITIAL_ZOOM = 10;
+// // Custom pointer icon
+// const pointerIcon = new L.Icon({
+//   iconUrl: pointerIconImg,
+//   iconSize: [30, 30],
+//   iconAnchor: [15, 30],   // bottom middle of icon
+//   popupAnchor: [0, -30],
+// });
 
-const CoorgDiseaseMap = () => {
-    const points = useMemo(() => coorgHotspots, []);
+// const KarnatakaCenter = {
+//   lat: 15.3173,  // latitude of Karnataka
+//   lng: 75.7139,  // longitude of Karnataka
+// };
 
-    // Define the gradient for the heatmap: Green (Low) -> Yellow (Medium) -> Red (High)
-    const gradient = {
-        0.0: '#5A9C00', 
-        0.5: '#FFEB3B', 
-        1.0: '#E53935'  
-    };
+// const CoorgDiseaseMap = ({ userCoords }) => {
+//   // Use Karnataka center if userCoords not provided
+//   const center = userCoords?.lat && userCoords?.lng ? userCoords : KarnatakaCenter;
 
-    return (
-        <div className="p-6 bg-gray-800 rounded-2xl shadow-xl border border-gray-700 h-[500px] flex flex-col">
-            <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-white flex items-center">
-                    <MapPin className="w-5 h-5 text-red-500 mr-2" />
-                    Coorg Disease Watch (Live Map)
-                </h3>
-                <span className="text-sm text-green-400 font-semibold border border-green-700/50 px-3 py-1 rounded-full bg-gray-900">
-                    {points.length} Active Hotspots
-                </span>
-            </div>
-            
-            <div className="flex-grow rounded-xl overflow-hidden border border-gray-600">
-                <MapContainer 
-                    center={COORG_CENTER} 
-                    zoom={INITIAL_ZOOM} 
-                    scrollWheelZoom={false}
-                    className="h-full w-full"
-                >
-                    {/* Dark Mode Tile Layer */}
-                    <TileLayer
-                        attribution='&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        url="https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
-                    />
+//   return (
+//     <MapContainer
+//       center={[center.lat, center.lng]}
+//       zoom={7}  // zoomed out to show whole Karnataka
+//       style={{ height: "400px", width: "100%" }}
+//       scrollWheelZoom={true}
+//     >
+//       <TileLayer
+//         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+//         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+//       />
 
-                    {/* Heatmap Layer - Direct usage from the installed package */}
-                    <HeatmapLayer
-                        points={points}
-                        // Data format: [latitude, longitude, intensity]
-                        longitudeExtractor={m => m[1]} 
-                        latitudeExtractor={m => m[0]}
-                        intensityExtractor={m => parseFloat(m[2])}
-                        gradient={gradient}
-                        radius={25} 
-                        max={1.0}
-                    />
-                </MapContainer>
-            </div>
-        </div>
-    );
-}
+//       {/* Show marker if userCoords are provided */}
+//       {userCoords?.lat && userCoords?.lng && (
+//         <Marker position={[userCoords.lat, userCoords.lng]} icon={pointerIcon}>
+//           <Popup>
+//             Your Farm Location <br />
+//             Latitude: {userCoords.lat}, Longitude: {userCoords.lng}
+//           </Popup>
+//         </Marker>
+//       )}
+//     </MapContainer>
+//   );
+// };
+
+// export default CoorgDiseaseMap;
+// DiseaseMap.jsx
+import React, { useState, useEffect } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import pointerIconImg from "../assets/icon.png"; // use your pointer image
+
+// Custom pointer icon
+const pointerIcon = new L.Icon({
+  iconUrl: pointerIconImg,
+  iconSize: [30, 30],
+  iconAnchor: [15, 30],   // bottom middle of icon
+  popupAnchor: [0, -30],
+});
+
+const KarnatakaCenter = {
+  lat: 15.3173,
+  lng: 75.7139,
+};
+
+const RecenterMap = ({ coords }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (coords?.lat && coords?.lng) {
+      map.setView([coords.lat, coords.lng], 15, { animate: true }); // smooth zoom to pointer
+    }
+  }, [coords, map]);
+
+  return null;
+};
+
+const CoorgDiseaseMap = ({ userCoords }) => {
+  const initialCenter = KarnatakaCenter;
+  const initialZoom = 7; // show whole state initially
+
+  return (
+    <MapContainer
+      center={[initialCenter.lat, initialCenter.lng]}
+      zoom={initialZoom}
+      style={{ height: "400px", width: "100%" }}
+      scrollWheelZoom={true}
+    >
+      <TileLayer
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      />
+
+      {/* Show marker if userCoords are provided */}
+      {userCoords?.lat && userCoords?.lng && (
+        <Marker position={[userCoords.lat, userCoords.lng]} icon={pointerIcon}>
+          <Popup>
+            Your Farm Location <br />
+            Latitude: {userCoords.lat}, Longitude: {userCoords.lng}
+          </Popup>
+        </Marker>
+      )}
+
+      {/* Recenter and zoom to user farm if available */}
+      {userCoords?.lat && userCoords?.lng && <RecenterMap coords={userCoords} />}
+    </MapContainer>
+  );
+};
 
 export default CoorgDiseaseMap;

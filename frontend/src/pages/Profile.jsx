@@ -11,8 +11,8 @@ const Profile = () => {
 
   // Example user data (can be fetched dynamically)
   const [userData, setUserData] = useState({
-    name: "John Farmer",
-    email: "john.farmer@example.com",
+    name: "Enter Name",
+    email: "name@example.com",
   });
 
   const [editedData, setEditedData] = useState(userData);

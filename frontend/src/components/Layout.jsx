@@ -1,4 +1,7 @@
+/* eslint-disable no-unused-vars */
  
+
+
 
 
 import React, { useState, useEffect } from "react";
@@ -59,16 +62,27 @@ const Layout = ({ children }) => {
   const [user, setUser] = useState(null);
   const [lang, setLang] = useState("en");
   const t = translations[lang];
+
   const navigate = useNavigate();
-  const location = useLocation(); // ✅ Detect current route
+  const location = useLocation();
 
   // Supabase auth listener
   useEffect(() => {
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-    });
-    return () => listener.subscription.unsubscribe();
-  }, []);
+  // Fetch current session
+  const getSession = async () => {
+    const { data } = await supabase.auth.getSession();
+    setUser(data.session?.user ?? null);
+  };
+  getSession();
+
+  // Listen for auth state changes
+  const { subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+    setUser(session?.user ?? null);
+  });
+
+  return () => subscription?.unsubscribe();
+}, []);
+
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -79,11 +93,12 @@ const Layout = ({ children }) => {
   const toggleLang = () => setLang(lang === "en" ? "kn" : "en");
 
   return (
-    <div className="bg-gray-950 min-h-screen">
+    <div className="bg-gray-950 min-h-screen flex flex-col">
       {/* Header */}
-      <header className="bg-gray-800 shadow-[0_4px_15px_rgba(0,0,0,0.3)] sticky top-0 z-50 border-b-2 border-grey-700">
+      <header className="bg-gray-800 shadow-[0_4px_15px_rgba(0,0,0,0.3)] sticky top-0 z-50 border-b-2 border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
+            {/* Logo */}
             <div
               onClick={() => navigate("/")}
               className="flex items-center space-x-2 cursor-pointer"
@@ -130,7 +145,24 @@ const Layout = ({ children }) => {
                 </>
               ) : (
                 <>
-                  <button onClick={() => navigate("/profile")} className="text-gray-400 hover:text-green-400 transition-colors" > <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" > <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /> </svg> </button>
+                  <button
+                    onClick={() => navigate("/profile")}
+                    className="text-gray-400 hover:text-green-400 transition-colors"
+                  >
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
+                  </button>
                   <button
                     onClick={handleLogout}
                     className="bg-red-500 hover:bg-red-400 text-white px-4 py-2 rounded-lg font-semibold shadow-md transition-transform hover:scale-105"
@@ -139,6 +171,7 @@ const Layout = ({ children }) => {
                   </button>
                 </>
               )}
+
               {/* Language Toggle */}
               <button
                 onClick={toggleLang}
@@ -154,12 +187,7 @@ const Layout = ({ children }) => {
                 onClick={() => setIsOpen(!isOpen)}
                 className="text-gray-400 hover:text-green-400 focus:outline-none"
               >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   {isOpen ? (
                     <path
                       strokeLinecap="round"
@@ -260,12 +288,11 @@ const Layout = ({ children }) => {
       </header>
 
       {/* Page Content */}
-      <main>
-  {location.pathname === "/" || location.pathname === "/scan"
-    ? React.cloneElement(children, { lang })
-    : children}
-</main>
-
+      <main className="flex-grow">
+        {React.Children.map(children, (child) =>
+          React.isValidElement(child) ? React.cloneElement(child, { lang }) : child
+        )}
+      </main>
 
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 mt-20 border-t border-green-800">
@@ -273,17 +300,12 @@ const Layout = ({ children }) => {
           <div className="flex flex-col space-y-4">
             <div className="flex items-center space-x-2">
               <Leaf className="text-green-500 w-6 h-6" />
-              <span className="text-xl font-semibold text-green-400">
-                CERESAI
-              </span>
+              <span className="text-xl font-semibold text-green-400">CERESAI</span>
             </div>
             <div className="text-sm">
               <p>
                 {t.footer.email}:{" "}
-                <a
-                  href="mailto:support@ceresai.com"
-                  className="hover:text-green-400"
-                >
+                <a href="mailto:support@ceresai.com" className="hover:text-green-400">
                   support@ceresai.com
                 </a>
               </p>
@@ -293,9 +315,7 @@ const Layout = ({ children }) => {
           </div>
 
           <div className="flex flex-col space-y-2 text-sm">
-            <h5 className="font-semibold text-white mb-2">
-              {t.footer.quickLinks}
-            </h5>
+            <h5 className="font-semibold text-white mb-2">{t.footer.quickLinks}</h5>
             {t.navItems.map((item, idx) => (
               <NavLink
                 key={`footer-${idx}`}

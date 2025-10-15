@@ -1,7 +1,10 @@
+from typing import Optional
+from pydantic import BaseModel
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from database import Base
 import datetime
+from datetime import datetime
 
 class User(Base):
     __tablename__ = "users"
@@ -23,26 +26,35 @@ class Farm(Base):
 
     owner = relationship("User", back_populates="farms")
 
-class AnalysisResult(Base):
-    __tablename__ = "analysis_results"
+# class AnalysisResult(Base):
+#     __tablename__ = "analysis_results"
 
-    id = Column(Integer, primary_key=True, index=True)
-    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
-    image_url = Column(String, nullable=True) # We'll store the image URL here later
-    user_query = Column(String, nullable=True)
+#     id = Column(Integer, primary_key=True, index=True)
+#     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+#     image_url = Column(String, nullable=True) # We'll store the image URL here later
+#     user_query = Column(String, nullable=True)
 
-    # Store the simple offline result
-    offline_disease_name = Column(String)
-    offline_confidence_score = Column(Float)
+#     # Store the simple offline result
+#     offline_disease_name = Column(String)
+#     offline_confidence_score = Column(Float)
 
-    # Store the detailed online result from Gemini
-    online_disease_name = Column(String)
-    online_severity = Column(String)
-    online_summary = Column(String)
-    online_recommended_actions = Column(JSON) # Use JSON to store the list
-    online_scientific_reason = Column(String)
-    online_preventative_measures = Column(JSON) # Use JSON to store the list
+#     # Store the detailed online result from Gemini
+#     online_disease_name = Column(String)
+#     online_severity = Column(String)
+#     online_summary = Column(String)
+#     online_recommended_actions = Column(JSON) # Use JSON to store the list
+#     online_scientific_reason = Column(String)
+#     online_preventative_measures = Column(JSON) # Use JSON to store the list
 
-    # Relationships
-    owner_id = Column(Integer, ForeignKey("users.id"))
-    farm_id = Column(Integer, ForeignKey("farms.id"))
+#     # Relationships
+#     owner_id = Column(Integer, ForeignKey("users.id"))
+#     farm_id = Column(Integer, ForeignKey("farms.id"))
+
+
+class AnalyzeRequest(BaseModel):
+    image: str                  # Base64 string
+    user_query: str
+    language_code: str
+    farm_id: int
+    user_id: int
+   

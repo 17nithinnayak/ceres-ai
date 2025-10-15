@@ -17,12 +17,13 @@ class User(UserBase):
     id: int
     class Config:
         from_attributes = True
+        
 
 # --- Farm Schemas ---
 class Location(BaseModel):
     lat: float
     lon: float
-    
+
 class FarmBase(BaseModel):
     name: str
     location: Location
@@ -36,6 +37,7 @@ class Farm(FarmBase):
     owner_id: int
     class Config:
         from_attributes = True
+        
 
 # --- Analysis Schemas ---
 class AnalysisResultBase(BaseModel):

@@ -2,11 +2,14 @@
 import React, { useState, useEffect } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { Leaf } from "lucide-react";
+import supabase from "../supabaseClient";
+import { useNavigate } from "react-router-dom";
 
 // Counter hook
 const useCounter = (endValue, duration = 2000) => {
   const [count, setCount] = useState(0);
   const controls = useAnimation();
+
 
   useEffect(() => {
     let startTime;
@@ -25,6 +28,7 @@ const useCounter = (endValue, duration = 2000) => {
   return count;
 };
 
+
 // Metric Card component
 const MetricCard = ({ icon: Icon, value, label, delay }) => {
   const displayedValue = useCounter(value);
@@ -36,6 +40,7 @@ const MetricCard = ({ icon: Icon, value, label, delay }) => {
   };
 
   return (
+    
     <motion.div
       variants={cardVariants}
       className="flex flex-col items-center p-6 sm:p-8 bg-gray-800 rounded-2xl border border-green-700/50 shadow-xl shadow-gray-900/50 hover:shadow-green-600/30 transition-all duration-500 cursor-default"
@@ -54,6 +59,8 @@ const MetricCard = ({ icon: Icon, value, label, delay }) => {
 
 // 🔹 Home Component receives language as prop
 const Home = ({ lang }) => {
+   const navigate=useNavigate()
+  
   const translations = {
     en: {
       hero: {
@@ -142,10 +149,12 @@ const Home = ({ lang }) => {
           <p className="text-lg text-gray-400 max-w-2xl mx-auto mb-8">{t.hero.description}</p>
           <div className="flex justify-center space-x-4">
             <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-              className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold shadow-lg transition-transform hover:shadow-green-500/50">
+            onClick={() => navigate("/register")}
+              className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold shadow-lg transition-transform hover:shadow-green-500/50" >
               {t.hero.cta1}
+
             </motion.button>
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => navigate("/scan")}
               className="border border-green-600 text-green-600 hover:bg-green-600 hover:text-white px-8 py-3 rounded-lg font-semibold transition-colors">
               {t.hero.cta2}
             </motion.button>
@@ -192,6 +201,7 @@ const Home = ({ lang }) => {
           <h3 className="text-3xl font-bold mb-4">{t.ctaSection.title}</h3>
           <p className="text-lg mb-8 opacity-80">{t.ctaSection.description}</p>
           <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+           onClick={() => navigate("/register")}
             className="bg-green-600 text-white font-semibold px-8 py-3 rounded-lg hover:bg-green-700 transition-transform shadow-lg shadow-green-600/30">
             {t.ctaSection.button}
           </motion.button>

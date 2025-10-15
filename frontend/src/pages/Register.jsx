@@ -249,10 +249,6 @@ export default function RegisterPage() {
           </motion.button>
         </form>
       </motion.div>
-
-      <div className="mt-8 text-sm text-gray-600 text-center">
-        © 2025 CeresAI – Empowering Smart Farming with AI
-      </div>
     </div>
   );
 }
