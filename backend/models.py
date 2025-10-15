@@ -17,7 +17,7 @@ class Farm(Base):
     __tablename__ = "farms"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
-    location = Column(String)
+    location = Column(JSON, nullable=False)
     crop_type = Column(String) # e.g., "Robusta", "Arabica"
     owner_id = Column(Integer, ForeignKey("users.id"))
 

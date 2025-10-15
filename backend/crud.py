@@ -18,7 +18,12 @@ def create_user(db: Session, user_data: dict):
     return db_user
 
 def create_user_farm(db: Session, farm: schemas.FarmCreate, user_id: int):
-    db_farm = models.Farm(**farm.model_dump(), owner_id=user_id)
+    db_farm = models.Farm(
+        name=farm.name,
+        location=farm.location,  # ✅ JSON dict
+        crop_type=farm.crop_type,
+        owner_id=user_id
+    )
     db.add(db_farm)
     db.commit()
     db.refresh(db_farm)
@@ -46,3 +51,10 @@ def create_analysis_result(db: Session, result: schemas.AnalysisResultCreate, us
 
 def get_analysis_history_for_user(db: Session, user_id: int, skip: int = 0, limit: int = 100):
     return db.query(models.AnalysisResult).filter(models.AnalysisResult.owner_id == user_id).order_by(models.AnalysisResult.timestamp.desc()).offset(skip).limit(limit).all()
+
+def get_farm_by_owner(db: Session, owner_id: int):
+    """
+    Retrieves the first farm associated with a user.
+    For the MVP, we assume one user has one farm.
+    """
+    return db.query(models.Farm).filter(models.Farm.owner_id == owner_id).first()

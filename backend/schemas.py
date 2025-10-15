@@ -1,29 +1,31 @@
+# backend/schemas.py
+
 from pydantic import BaseModel
 from typing import List, Optional
 import datetime
+from typing import Dict
 
-class UserCreate(BaseModel):
+# --- User Schemas ---
+class UserBase(BaseModel):
     name: str
     email: str
+
+class UserCreate(UserBase):
     password: str
-      # <-- new field
 
-class User(BaseModel):
+class User(UserBase):
     id: int
-    name: str
-    email: str
-      # <-- new field
-
     class Config:
         from_attributes = True
 
-from pydantic import BaseModel
-
-#... (keep the existing UserCreate and User classes)
-
+# --- Farm Schemas ---
+class Location(BaseModel):
+    lat: float
+    lon: float
+    
 class FarmBase(BaseModel):
     name: str
-    location: str
+    location: Location
     crop_type: str
 
 class FarmCreate(FarmBase):
@@ -32,14 +34,14 @@ class FarmCreate(FarmBase):
 class Farm(FarmBase):
     id: int
     owner_id: int
-
     class Config:
         from_attributes = True
-    
+
+# --- Analysis Schemas ---
 class AnalysisResultBase(BaseModel):
     user_query: Optional[str] = None
-    offline_disease_name: str
-    offline_confidence_score: float
+    offline_disease_name: Optional[str] = None
+    offline_confidence_score: Optional[float] = None
     online_disease_name: str
     online_severity: str
     online_summary: str
@@ -56,6 +58,5 @@ class AnalysisResult(AnalysisResultBase):
     image_url: Optional[str] = None
     owner_id: int
     farm_id: int
-
     class Config:
         from_attributes = True

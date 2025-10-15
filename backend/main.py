@@ -27,23 +27,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- Pydantic Models for Request Body ---
+# --- Updated Pydantic Model for Request Body ---
+# We REMOVE both userId and farmId because they will come from the token.
 class AnalysisRequest(BaseModel):
-    userId: str
-    farmId: str
     image: str
     userQuery: str
     location: dict
     languageCode: str
 
-# --- Authentication & Farm Endpoints ---
-# (Keep all your existing endpoints for users, token, and farms here)
+# --- Authentication Endpoints ---
 @app.post("/api/v1/users/", response_model=schemas.User)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+def create_user_endpoint(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    user_dict = {"email": user.email, "password": user.password}
+    user_dict = {"email": user.email, "name": user.name, "password": user.password}
     return crud.create_user(db=db, user_data=user_dict)
 
 @app.post("/api/v1/token")
@@ -54,35 +52,41 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
     access_token = security.create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer"}
 
+# --- SECURE Farm Management Endpoints ---
 @app.post("/api/v1/farms/", response_model=schemas.Farm)
-def create_farm_for_user(farm: schemas.FarmCreate, user_id: int, db: Session = Depends(get_db)):
-    return crud.create_user_farm(db=db, farm=farm, user_id=user_id)
+def create_farm_for_user(
+    farm: schemas.FarmCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    # farm.location is now a dict {"lat": float, "lon": float}
+    return crud.create_user_farm(db=db, farm=farm, user_id=current_user.id)
 
-@app.get("/api/v1/farms/{user_id}", response_model=List[schemas.Farm])
-def read_farms_for_user(user_id: int, db: Session = Depends(get_db)):
-    return crud.get_farms_by_user(db, user_id=user_id)
+@app.get("/api/v1/farms/me", response_model=List[schemas.Farm])
+def read_my_farms(db: Session = Depends(get_db), current_user: models.User = Depends(security.get_current_user)):
+    farms = crud.get_farms_by_user(db, user_id=current_user.id)
+    return farms
 
 # --- Root Endpoint ---
 @app.get("/")
 async def read_root():
     return {"message": "Ceres AI Backend is running!"}
 
-# --- Analysis & History Endpoints ---
-
+# --- SECURE & DYNAMIC Analysis and History Endpoints ---
 @app.post("/api/v1/analyze")
-async def analyze_image(request: AnalysisRequest, db: Session = Depends(get_db)):
-    try:
-        farm_id_int = int(request.farmId)
-        user_id_int = int(request.userId)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid Farm ID or User ID format.")
-
-    db_farm = crud.get_farm_by_id(db, farm_id=farm_id_int)
+async def analyze_image(
+    request: AnalysisRequest, 
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(security.get_current_user)
+):
+    # --- Step 1: Dynamically fetch the user's farm ---
+    db_farm = crud.get_farm_by_owner(db, owner_id=current_user.id)
     if db_farm is None:
-        raise HTTPException(status_code=404, detail=f"Farm with ID {farm_id_int} not found.")
+        raise HTTPException(status_code=404, detail="No farm found for the current user. Please create a farm first.")
 
     farm_details = {"location": db_farm.location, "crop_type": db_farm.crop_type, "name": db_farm.name}
     
+    # --- Step 2: Call the agentic function ---
     online_result = agent.run_analysis_agent(
         image_base64=request.image,
         user_query=request.userQuery,
@@ -93,11 +97,11 @@ async def analyze_image(request: AnalysisRequest, db: Session = Depends(get_db))
     if "error" in online_result:
         raise HTTPException(status_code=500, detail=online_result["error"])
 
-    # --- SAVE THE RESULT TO THE DATABASE ---
+    # --- Step 3: Save the result to the database ---
     result_to_save = schemas.AnalysisResultCreate(
         user_query=request.userQuery,
-        offline_disease_name="Coffee Leaf Rust", # Placeholder from client
-        offline_confidence_score=0.85, # Placeholder from client
+        offline_disease_name="Unknown", # This should come from the client
+        offline_confidence_score=0.0, # This should come from the client
         online_disease_name=online_result.get("diseaseName"),
         online_severity=online_result.get("severity"),
         online_summary=online_result.get("summary"),
@@ -105,18 +109,14 @@ async def analyze_image(request: AnalysisRequest, db: Session = Depends(get_db))
         online_scientific_reason=online_result.get("scientificReason"),
         online_preventative_measures=online_result.get("preventativeMeasures")
     )
-    crud.create_analysis_result(db=db, result=result_to_save, user_id=user_id_int, farm_id=farm_id_int)
+    crud.create_analysis_result(db=db, result=result_to_save, user_id=current_user.id, farm_id=db_farm.id)
     
     return {"onlineResult": online_result}
 
-
-@app.get("/api/v1/history/{user_id}", response_model=List[schemas.AnalysisResult])
-def read_analysis_history(user_id: int, db: Session = Depends(get_db)):
-    """
-    Fetch all past analysis results for a specific user.
-    """
-    history = crud.get_analysis_history_for_user(db, user_id=user_id)
-    if not history:
-        raise HTTPException(status_code=404, detail="No analysis history found for this user.")
-
+@app.get("/api/v1/history/me", response_model=List)
+def read_my_analysis_history(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    history = crud.get_analysis_history_for_user(db, user_id=current_user.id)
     return history
