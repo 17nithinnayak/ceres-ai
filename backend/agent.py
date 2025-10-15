@@ -1,12 +1,18 @@
+# backend/agent.py
+
 import os
 import google.generativeai as genai
 from PIL import Image
 import io
 import base64
 from datetime import datetime
+from dotenv import load_dotenv
 
 # Import our RAG tool
 from rag_tool import retrieve_context
+
+# Load environment variables from the.env file
+load_dotenv()
 
 # Configure the Gemini API with the key from our.env file
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -52,7 +58,10 @@ def run_analysis_agent(image_base64: str, user_query: str, farm_details: dict) -
         "diseaseName": "Your Diagnosis (e.g., Coffee Leaf Rust)",
         "severity": "Your assessment of severity (e.g., 'Low', 'Medium', 'High')",
         "summary": "A brief, 2-3 sentence summary explaining the issue in simple terms.",
-        "recommendedActions":,
+        "recommendedActions": [
+            "A list of 2-3 simple, numbered, actionable steps for the farmer.",
+            "Example: 1. Prune and destroy all affected leaves immediately to reduce fungal load."
+        ],
         "scientificReason": "A simple scientific explanation of the disease (e.g., 'This is a fungus that thrives in high humidity...').",
         "preventativeMeasures": [
             "A list of 2-3 long-term preventative measures.",
@@ -70,7 +79,7 @@ def run_analysis_agent(image_base64: str, user_query: str, farm_details: dict) -
         img = Image.open(io.BytesIO(image_data))
 
         # Initialize the Gemini Pro Vision model
-        model = genai.GenerativeModel('gemini-pro-vision')
+        model = genai.GenerativeModel('gemini-2.5-flash')
         
         print("   -> Calling Gemini Vision API...")
         response = model.generate_content([prompt, img])
