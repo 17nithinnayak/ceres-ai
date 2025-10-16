@@ -1,315 +1,629 @@
-/* eslint-disable no-unused-vars */
+import React, { useState, useRef, useEffect } from "react";
+import { Camera, Upload, Leaf, X, Loader, AlertTriangle, Mic, Volume2, VolumeX } from "lucide-react";
 
-import React, { useState, useRef } from "react";
-import { Camera, Upload, Mic, Leaf, X, Loader, CheckCircle, AlertTriangle } from "lucide-react";
-import { motion } from "framer-motion";
-
-// 🌍 Translation dictionary
 const translations = {
   en: {
     title: "Scan Your Plant",
     subtitle: "Capture an image and let AI diagnose plant health instantly",
     takePhoto: "Take Photo",
     uploadImage: "Upload Image",
-    voiceNote: "Voice Note",
     startDiagnosis: "Start Diagnosis",
-    instant: "Instant",
-    offline: "Offline",
-    accuracy: "Accuracy",
-    instantDesc: "Results in seconds",
-    offlineDesc: "Works without internet",
-    accuracyDesc: "Accuracy rate",
     analyzing: "Analyzing Image...",
-    pleaseWait: "Please wait for the expert review.",
-    error: "Error",
-    tryAgain: "Clear & Try Again",
     selectPrompt: "Click to capture or upload image",
     supportText: "Supports high-res photos up to 10MB",
+    queryPlaceholder: "Describe the problem (optional)",
+    lblLang: "Language",
+    lblEnglish: "English",
+    lblKannada: "Kannada",
+    voiceInput: "Voice Input",
+    listening: "Listening...",
+    speak: "Read Aloud",
+    stopSpeaking: "Stop Reading",
   },
   kn: {
     title: "ನಿಮ್ಮ ಸಸಿಯನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ",
     subtitle: "ಚಿತ್ರವನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ, ಮತ್ತು AI ತಕ್ಷಣವೇ ಆರೋಗ್ಯ ವಿಶ್ಲೇಷಣೆ ನೀಡುತ್ತದೆ",
     takePhoto: "ಫೋಟೋ ತೆಗೆದುಕೊಳ್ಳಿ",
     uploadImage: "ಚಿತ್ರವನ್ನು ಅಪ್ಲೋಡ್ ಮಾಡಿ",
-    voiceNote: "ಧ್ವನಿ ಟಿಪ್ಪಣಿ",
     startDiagnosis: "ವಿಶ್ಲೇಷಣೆ ಪ್ರಾರಂಭಿಸಿ",
-    instant: "ತಕ್ಷಣ",
-    offline: "ಆಫ್‌ಲೈನ್",
-    accuracy: "ನಿಖರತೆ",
-    instantDesc: "ಕೆಲವೇ ಕ್ಷಣದಲ್ಲಿ ಫಲಿತಾಂಶಗಳು",
-    offlineDesc: "ಇಂಟರ್ನೆಟ್ ಇಲ್ಲದೇ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತದೆ",
-    accuracyDesc: "ನಿಖರತೆಯ ಪ್ರಮಾಣ",
     analyzing: "ಚಿತ್ರವನ್ನು ವಿಶ್ಲೇಷಿಸಲಾಗುತ್ತಿದೆ...",
-    pleaseWait: "ದಯವಿಟ್ಟು ತಜ್ಞರ ಪರಿಶೀಲನೆಗಾಗಿ ಕಾಯಿರಿ.",
-    error: "ದೋಷ",
-    tryAgain: "ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
     selectPrompt: "ಚಿತ್ರವನ್ನು ಸೆರೆಹಿಡಿಯಲು ಅಥವಾ ಅಪ್ಲೋಡ್ ಮಾಡಲು ಕ್ಲಿಕ್ ಮಾಡಿ",
-    supportText: "10MB ವರೆಗೆ ಉತ್ತಮ ಗುಣಮಟ್ಟದ ಚಿತ್ರಗಳನ್ನು ಬೆಂಬಲಿಸುತ್ತದೆ",
+    supportText: "10MB ವರೆಗೆ ಉತ್ತಮ ಗುಣಮತ್ತದ ಚಿತ್ರಗಳನ್ನು ಬೆಂಬಲಿಸುತ್ತದೆ",
+    queryPlaceholder: "ಸಮಸ್ಯೆಯನ್ನು ವಿವರಣೆಯಾಗಿ ಹೇಳಿ (ಐಚ್ಛಿಕ)",
+    lblLang: "ಭಾಷೆ",
+    lblEnglish: "ಇಂಗ್ಲಿಷ್",
+    lblKannada: "ಕನ್ನಡ",
+    voiceInput: "ಧ್ವನಿ ಇನ್‌ಪುಟ್",
+    listening: "ಕೇಳುತ್ತಿದೆ...",
+    speak: "ಓದಿ",
+    stopSpeaking: "ನಿಲ್ಲಿಸಿ",
   },
 };
 
-// --- Mock data (unchanged)
-const mockAnalysisData = {
-  imageUrl: "https://placehold.co/400x300/15803d/ffffff?text=Analyzed+Leaf",
-  offlineResult: {
-    diseaseName: "Early Blight",
-    confidenceScore: 0.92,
-  },
-  onlineResult: {
-    diseaseName: "Tomato Early Blight (Alternaria solani)",
-    severity: "Moderate",
-    summary:
-      "Early Blight is a common fungal disease affecting tomatoes and potatoes. It causes dark, concentric spots on older leaves, reducing photosynthesis and leading to premature defoliation.",
-    scientificReason:
-      "Caused by the fungus Alternaria solani, the disease thrives in warm, humid conditions. Spores are spread by wind, water splash, insects, and contaminated tools, infecting lower leaves first.",
-    preventativeMeasures: [
-      "Rotate crops annually to avoid pathogen buildup in the soil.",
-      "Water at the base of the plant to keep leaves dry.",
-      "Apply a suitable fungicide (e.g., Chlorothalonil) at the first sign of disease.",
-      "Remove and destroy infected leaves immediately.",
-    ],
-  },
-};
-
-const App = ({ lang = "en" }) => {
-  const t = translations[lang]; // 🪄 Use translation based on selected language
+const App = ({ initialLang = "en" }) => {
+  const [lang, setLang] = useState(initialLang);
+  const t = translations[lang] || translations.en;
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [userQuery, setUserQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState(null);
+  const [onlineResult, setOnlineResult] = useState(null);
   const [error, setError] = useState(null);
+  const [showLogin, setShowLogin] = useState(false);
+  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  const recognitionRef = useRef(null);
+  const synthesisRef = useRef(window.speechSynthesis);
+
   const fileInputRef = useRef(null);
+  const API_BASE = "http://localhost:8000";
 
-  const triggerFileInput = () => {
-    if (fileInputRef.current) fileInputRef.current.click();
-  };
+  // Initialize Speech Recognition
+  useEffect(() => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      
+      recognitionRef.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setUserQuery(transcript);
+        setIsListening(false);
+      };
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-      setAnalysisResult(null);
+      recognitionRef.current.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+        setError('Voice recognition failed. Please try again.');
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+  }, []);
+
+  // Speech to Text function
+  const startListening = () => {
+    if (!recognitionRef.current) {
+      setError('Speech recognition not supported in your browser');
+      return;
+    }
+
+    try {
+      // Set language based on current selection
+      recognitionRef.current.lang = lang === 'kn' ? 'kn-IN' : 'en-US';
+      recognitionRef.current.start();
+      setIsListening(true);
       setError(null);
+    } catch (err) {
+      console.error('Error starting recognition:', err);
+      setError('Could not start voice recognition');
     }
   };
 
-  const clearSelection = () => {
-    setSelectedFile(null);
-    setPreviewUrl(null);
-    setAnalysisResult(null);
-    setError(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    }
   };
 
-  const startDiagnosis = async () => {
-    if (!selectedFile) return;
-    setIsLoading(true);
-    setAnalysisResult(null);
+  // Text to Speech function
+  const speakText = (text) => {
+    if (!text) return;
+
+    // Stop any ongoing speech
+    synthesisRef.current.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang === 'kn' ? 'kn-IN' : 'en-US';
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+      setError('Text-to-speech failed');
+    };
+
+    synthesisRef.current.speak(utterance);
+  };
+
+  const stopSpeaking = () => {
+    synthesisRef.current.cancel();
+    setIsSpeaking(false);
+  };
+
+  // Read out the analysis result
+  const speakResult = () => {
+    if (!onlineResult) return;
+
+    const textToSpeak = `
+      ${onlineResult.diseaseName}. 
+      ${lang === 'kn' ? 'ತೀವ್ರತೆ' : 'Severity'}: ${onlineResult.severity}. 
+      ${onlineResult.summary}. 
+      ${onlineResult.scientificReason || ''}
+    `;
+
+    speakText(textToSpeak);
+  };
+
+  // Check if already logged in on mount
+  useState(() => {
+    const token = localStorage.getItem("backend_token");
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  const loginToBackend = async (e) => {
+    e?.preventDefault();
     setError(null);
+    setIsLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate loading
-      const data = mockAnalysisData;
-      setAnalysisResult(data);
+      // Try form-data format first (common for OAuth2)
+      const formData = new URLSearchParams();
+      formData.append('username', loginForm.email); // OAuth2 uses 'username' field even for email
+      formData.append('password', loginForm.password);
+
+      const response = await fetch(`${API_BASE}/api/v1/token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData.toString()
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        const errorMsg = errorData?.detail || `Status ${response.status}`;
+        
+        if (response.status === 401) {
+          throw new Error(`Invalid credentials: ${errorMsg}. Please check your email and password.`);
+        }
+        throw new Error(`Login failed: ${errorMsg}`);
+      }
+
+      const data = await response.json();
+      
+      // Store the token - adjust based on your API response structure
+      const token = data.access_token || data.token;
+      if (!token) {
+        throw new Error("No token received from server");
+      }
+
+      localStorage.setItem("backend_token", token);
+      setIsLoggedIn(true);
+      setShowLogin(false);
+      setLoginForm({ email: "", password: "" });
+      console.log("Login successful!");
     } catch (err) {
-      setError("Failed to complete analysis");
+      console.error("Login error:", err);
+      setError(err.message || "Login failed");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // --- Sub Component ---
+  const logout = () => {
+    localStorage.removeItem("backend_token");
+    setIsLoggedIn(false);
+    clearSelection();
+  };
+
+  const triggerFileInput = () => fileInputRef.current?.click();
+
+  const handleFileChange = (e) => {
+    setError(null);
+    setOnlineResult(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      setError("File too large. Please select an image <= 10MB.");
+      return;
+    }
+
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const clearSelection = () => {
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setUserQuery("");
+    setOnlineResult(null);
+    setError(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const fileToDataUrl = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.onload = () => resolve(reader.result);
+      reader.readAsDataURL(file);
+    });
+
+  const startDiagnosis = async () => {
+    setError(null);
+    setOnlineResult(null);
+
+    if (!selectedFile) {
+      setError("Please select or take a photo first.");
+      return;
+    }
+
+    // Check for backend token (not Supabase token)
+    let token = localStorage.getItem("backend_token")?.trim();
+    
+    if (!token) {
+      setError("Please login to the backend API first.");
+      setShowLogin(true);
+      return;
+    }
+
+    // Remove "Bearer " prefix if it exists (we'll add it back)
+    token = token.replace(/^Bearer\s+/i, '');
+
+    console.log("Token found:", token ? "YES" : "NO");
+    console.log("Token length:", token.length);
+    console.log("Token preview:", token.substring(0, 30) + "...");
+    console.log("API endpoint:", `${API_BASE}/api/v1/analyze`);
+    
+    // Try to decode JWT to check expiry
+    try {
+      const parts = token.split('.');
+      if (parts.length === 3) {
+        const payload = JSON.parse(atob(parts[1]));
+        console.log("Token payload:", payload);
+        console.log("Token issuer:", payload.iss || "No issuer");
+        if (payload.exp) {
+          const expiry = new Date(payload.exp * 1000);
+          const now = new Date();
+          console.log("Token expires:", expiry.toLocaleString());
+          console.log("Current time:", now.toLocaleString());
+          console.log("Token expired:", now > expiry);
+        }
+      }
+    } catch (e) {
+      console.log("Could not decode token:", e);
+    }
+
+    setIsLoading(true);
+    try {
+      const imageDataUrl = await fileToDataUrl(selectedFile);
+
+      const payload = {
+        image: imageDataUrl,
+        userQuery: userQuery || "",
+        languageCode: lang === "kn" ? "kn" : "en",
+        location: {
+          latitude: 0,
+          longitude: 0
+        }
+      };
+
+      const resp = await fetch(`${API_BASE}/api/v1/analyze`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      console.log("Response status:", resp.status);
+      console.log("Response headers:", Object.fromEntries(resp.headers.entries()));
+
+      if (!resp.ok) {
+        if (resp.status === 401) {
+          const errorBody = await resp.text().catch(() => "");
+          console.error("401 Error body:", errorBody);
+          console.error("Token that failed:", token.substring(0, 30) + "...");
+          
+          // Don't auto-clear tokens yet - let user see the error
+          throw new Error(`Authentication failed: ${errorBody}. Check console for details.`);
+        }
+        const text = await resp.text().catch(() => "");
+        throw new Error(`Server returned ${resp.status}: ${text}`);
+      }
+
+      const body = await resp.json();
+      if (!body?.onlineResult) throw new Error("Invalid response from server.");
+
+      setOnlineResult(body.onlineResult);
+    } catch (err) {
+      console.error("Analyze error:", err);
+      setError(err.message || "Analysis failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const AnalysisResultDisplay = ({ result }) => {
-    const { offlineResult, onlineResult } = result;
+    if (!result) return null;
+    const {
+      diseaseName,
+      severity,
+      summary,
+      recommendedActions = [],
+      scientificReason,
+      preventativeMeasures = [],
+    } = result;
+
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="bg-gray-800 p-6 sm:p-8 rounded-3xl shadow-2xl border border-gray-700"
-      >
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-gray-700 pb-4">
-          <h2 className="text-3xl font-extrabold text-green-300 flex items-center mb-4 sm:mb-0">
-            <Leaf size={32} className="mr-3" /> Analysis Complete
+      <div className="bg-gray-800 p-6 sm:p-8 rounded-3xl shadow-2xl border border-gray-700 animate-fade-in">
+        <div className="flex justify-between items-start mb-4 border-b border-gray-700 pb-4">
+          <h2 className="text-2xl font-bold text-green-300 flex items-center">
+            <Leaf size={28} className="mr-2" /> {diseaseName}
           </h2>
-          <button
-            onClick={clearSelection}
-            className="p-3 text-gray-400 hover:text-red-400 transition-colors rounded-full bg-gray-700"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        <div className="grid lg:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <img
-              src={previewUrl || result.imageUrl}
-              alt="Analyzed Plant Leaf"
-              className="w-full h-auto rounded-xl object-cover shadow-lg border border-gray-700"
-            />
-            <div className="bg-gray-700 p-4 rounded-xl border border-green-800">
-              <h4 className="font-semibold text-lg mb-1 text-green-200">
-                Offline (Instant) Diagnosis
-              </h4>
-              <p className="text-sm text-gray-300">
-                Disease: <span className="font-bold">{offlineResult.diseaseName}</span>
-              </p>
-              <p className="text-sm text-gray-300">
-                Confidence:{" "}
-                <span className="font-bold">
-                  {(offlineResult.confidenceScore * 100).toFixed(0)}%
-                </span>
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <div className="bg-green-900/50 p-4 rounded-xl border border-green-900">
-              <h3 className="text-2xl font-bold text-green-300 mb-2">
-                {onlineResult.diseaseName}
-              </h3>
-              <div className="flex items-center space-x-2 text-red-400 font-medium">
-                <AlertTriangle size={18} />
-                <span>Severity: {onlineResult.severity}</span>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="text-xl font-semibold border-b border-gray-700 pb-1 text-green-300">
-                Summary
-              </h4>
-              <p className="text-gray-300 italic">{onlineResult.summary}</p>
-
-              <h4 className="text-xl font-semibold border-b border-gray-700 pb-1 text-green-300">
-                Scientific Reason
-              </h4>
-              <p className="text-gray-300">{onlineResult.scientificReason}</p>
-
-              <h4 className="text-xl font-semibold border-b border-gray-700 pb-1 text-green-300">
-                Preventative Measures
-              </h4>
-              <ul className="list-disc list-inside space-y-2 text-gray-300 pl-4">
-                {onlineResult.preventativeMeasures.map((measure, i) => (
-                  <li key={i}>{measure}</li>
-                ))}
-              </ul>
-            </div>
+          <div className="flex gap-2">
+            <button
+              onClick={isSpeaking ? stopSpeaking : speakResult}
+              className="p-2 text-gray-400 hover:text-green-400 rounded-full transition"
+              title={isSpeaking ? t.stopSpeaking : t.speak}
+            >
+              {isSpeaking ? <VolumeX size={24} /> : <Volume2 size={24} />}
+            </button>
+            <button
+              onClick={clearSelection}
+              className="p-2 text-gray-400 hover:text-red-400 rounded-full transition"
+              title="Close"
+            >
+              <X />
+            </button>
           </div>
         </div>
-      </motion.div>
+
+        <div className="mb-4">
+          <div className="text-sm text-red-300 font-medium mb-2">
+            <AlertTriangle size={16} className="inline mr-2" />
+            Severity: {severity}
+          </div>
+          <p className="italic text-gray-300 mb-3">{summary}</p>
+        </div>
+
+        {scientificReason && (
+          <div className="mb-4">
+            <h4 className="font-semibold text-green-200">Scientific Reason</h4>
+            <p className="text-gray-300">{scientificReason}</p>
+          </div>
+        )}
+
+        {recommendedActions.length > 0 && (
+          <div className="mb-4">
+            <h4 className="font-semibold text-green-200">Recommended Actions</h4>
+            <ol className="list-decimal pl-6 text-gray-300 space-y-1">
+              {recommendedActions.map((a, i) => (
+                <li key={i}>{a}</li>
+              ))}
+            </ol>
+          </div>
+        )}
+
+        {preventativeMeasures.length > 0 && (
+          <div>
+            <h4 className="font-semibold text-green-200">Preventative Measures</h4>
+            <ul className="list-disc pl-6 text-gray-300 space-y-1">
+              {preventativeMeasures.map((p, i) => (
+                <li key={i}>{p}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
     );
   };
 
   return (
-    <div className="min-h-screen font-sans bg-gray-900 text-gray-100">
-      <motion.main
-        className="max-w-4xl mx-auto px-4 sm:px-8 py-16"
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-      >
-        {analysisResult ? (
-          <AnalysisResultDisplay result={analysisResult} />
-        ) : (
-          <div className="text-center mb-12">
-            <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-100 mb-4">
-              {t.title.split(" ")[0]} <span className="text-green-300">{t.title.split(" ")[1]}</span>
-            </h1>
-            <p className="text-gray-400 text-lg">{t.subtitle}</p>
-
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              accept="image/*"
-              className="hidden"
-            />
-
-            {/* Preview & Actions */}
-            {!isLoading && !error && (
-              <div className="mt-12 flex flex-col items-center gap-8">
-                <motion.div
-                  className={`w-full max-w-md h-80 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center cursor-pointer transition-colors shadow-xl ${
-                    selectedFile
-                      ? "border-green-700 bg-gray-700/50 relative"
-                      : "border-green-600 bg-gray-800 hover:border-green-400 hover:bg-gray-700"
-                  }`}
-                  onClick={selectedFile ? null : triggerFileInput}
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100">
+      <main className="max-w-4xl mx-auto px-4 sm:px-8 py-12">
+        {/* Login Modal */}
+        {showLogin && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 rounded-3xl p-8 max-w-md w-full border border-gray-700">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-green-300">Login to Backend</h2>
+                <button
+                  onClick={() => setShowLogin(false)}
+                  className="text-gray-400 hover:text-red-400"
                 >
-                  {previewUrl ? (
-                    <>
-                      <img
-                        src={previewUrl}
-                        alt="Selected Leaf Preview"
-                        className="absolute inset-0 w-full h-full object-cover rounded-3xl opacity-80"
-                      />
-                      <div className="z-10 text-center p-4 rounded-xl backdrop-blur-sm bg-black/40">
-                        <p className="text-white font-medium">{selectedFile.name}</p>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            clearSelection();
-                          }}
-                          className="mt-2 text-sm text-red-400 hover:text-red-300 flex items-center mx-auto"
-                        >
-                          <X size={16} className="mr-1" /> Remove Image
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <Camera size={64} className="text-green-400 mb-4" />
-                      <p className="text-gray-300 font-medium">{t.selectPrompt}</p>
-                      <p className="text-sm text-gray-500 mt-1">{t.supportText}</p>
-                    </>
-                  )}
-                </motion.div>
-
-                {/* Buttons */}
-                <div className="flex flex-wrap justify-center gap-4">
-                  {[
-                    { icon: Camera, label: t.takePhoto, onClick: triggerFileInput },
-                    { icon: Upload, label: t.uploadImage, onClick: triggerFileInput },
-                    { icon: Mic, label: t.voiceNote, onClick: () => console.log("Voice Note") },
-                  ].map(({ icon: Icon, label, onClick }, i) => (
-                    <motion.button
-                      key={i}
-                      onClick={onClick}
-                      className="flex flex-col items-center justify-center w-28 h-28 bg-gray-800 border border-gray-700 hover:border-green-700 rounded-2xl shadow-md"
-                    >
-                      <Icon size={28} className="text-green-300 mb-2" />
-                      <span className="text-sm text-gray-300 font-medium">{label}</span>
-                    </motion.button>
-                  ))}
-                </div>
-
-                <motion.button
-                  onClick={startDiagnosis}
-                  className="w-full max-w-md py-4 bg-green-700 text-white text-lg font-bold rounded-2xl hover:bg-green-800 transition-colors shadow-xl"
-                >
-                  {t.startDiagnosis}
-                </motion.button>
+                  <X size={24} />
+                </button>
               </div>
-            )}
-
-            {/* Features */}
-            <div className="grid grid-cols-3 gap-8 mt-24 border-t border-gray-700 pt-10">
-              {[
-                { title: t.instant, desc: t.instantDesc },
-                { title: t.offline, desc: t.offlineDesc },
-                { title: "98%", desc: t.accuracyDesc },
-              ].map((item, i) => (
-                <motion.div key={i} className="text-center">
-                  <h3 className="text-3xl font-extrabold text-green-300 mb-2">{item.title}</h3>
-                  <p className="text-gray-400">{item.desc}</p>
-                </motion.div>
-              ))}
+              <form onSubmit={loginToBackend} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Email</label>
+                  <input
+                    type="email"
+                    value={loginForm.email}
+                    onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-100"
+                    placeholder="your@email.com"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Password</label>
+                  <input
+                    type="password"
+                    value={loginForm.password}
+                    onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-100"
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 rounded-xl font-semibold hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  {isLoading ? "Logging in..." : "Login"}
+                </button>
+                {error && (
+                  <div className="bg-red-900/30 border border-red-500 text-red-300 px-4 py-3 rounded-xl text-sm">
+                    <AlertTriangle className="inline mr-2" size={16} />
+                    {error}
+                  </div>
+                )}
+              </form>
             </div>
           </div>
         )}
-      </motion.main>
+
+        {onlineResult ? (
+          <AnalysisResultDisplay result={onlineResult} />
+        ) : (
+          <div className="text-center">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex gap-2 bg-gray-800 rounded-full p-1">
+                <button
+                  onClick={() => setLang("en")}
+                  className={`px-4 py-2 rounded-full text-sm transition ${
+                    lang === "en" ? "bg-green-500 text-white" : "text-gray-400"
+                  }`}
+                >
+                  {t.lblEnglish}
+                </button>
+                <button
+                  onClick={() => setLang("kn")}
+                  className={`px-4 py-2 rounded-full text-sm transition ${
+                    lang === "kn" ? "bg-green-500 text-white" : "text-gray-400"
+                  }`}
+                >
+                  {t.lblKannada}
+                </button>
+              </div>
+              
+              <div>
+                {isLoggedIn ? (
+                  <button
+                    onClick={logout}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-full text-sm transition"
+                  >
+                    Logout
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setShowLogin(true)}
+                    className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-full text-sm transition"
+                  >
+                    Login
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <h1 className="text-4xl font-extrabold mb-2">
+              <span className="text-green-400">
+                <Leaf className="inline mb-1" size={36} />
+              </span>{" "}
+              {t.title}
+            </h1>
+            <p className="text-gray-400 mb-8">{t.subtitle}</p>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+
+            <div
+              onClick={!previewUrl ? triggerFileInput : undefined}
+              className={`w-full max-w-md h-80 mx-auto border-2 border-dashed rounded-3xl flex items-center justify-center overflow-hidden ${
+                previewUrl
+                  ? "border-green-500 bg-gray-800"
+                  : "border-gray-600 bg-gray-800/50 cursor-pointer hover:border-green-500 hover:bg-gray-800/70"
+              } transition-all`}
+            >
+              {previewUrl ? (
+                <div className="relative w-full h-full">
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="w-full h-full object-contain"
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      clearSelection();
+                    }}
+                    className="absolute top-3 right-3 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+              ) : (
+                <div className="text-center p-6">
+                  <Upload size={48} className="mx-auto mb-4 text-green-400" />
+                  <p className="text-lg font-medium mb-2">{t.selectPrompt}</p>
+                  <p className="text-sm text-gray-500">{t.supportText}</p>
+                </div>
+              )}
+            </div>
+
+            {previewUrl && (
+              <div className="max-w-md mx-auto mt-6 space-y-4">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={userQuery}
+                    onChange={(e) => setUserQuery(e.target.value)}
+                    placeholder={t.queryPlaceholder}
+                    className="w-full px-4 py-3 pr-12 bg-gray-800 border border-gray-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-100"
+                  />
+                  <button
+                    onClick={isListening ? stopListening : startListening}
+                    className={`absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full transition ${
+                      isListening 
+                        ? 'bg-red-500 text-white animate-pulse' 
+                        : 'bg-gray-700 text-gray-300 hover:bg-green-600 hover:text-white'
+                    }`}
+                    title={isListening ? t.listening : t.voiceInput}
+                  >
+                    <Mic size={20} />
+                  </button>
+                </div>
+
+                <button
+                  onClick={startDiagnosis}
+                  disabled={isLoading}
+                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-4 rounded-2xl font-semibold hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-green-500/50 flex items-center justify-center gap-2"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader className="animate-spin" size={20} />
+                      {t.analyzing}
+                    </>
+                  ) : (
+                    <>
+                      <Camera size={20} />
+                      {t.startDiagnosis}
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+
+            {error && (
+              <div className="max-w-md mx-auto mt-6 bg-red-900/30 border border-red-500 text-red-300 px-4 py-3 rounded-2xl">
+                <AlertTriangle className="inline mr-2" size={18} />
+                {error}
+              </div>
+            )}
+          </div>
+        )}
+      </main>
     </div>
   );
 };

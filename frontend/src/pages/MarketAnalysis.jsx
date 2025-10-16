@@ -6,26 +6,26 @@ import { TrendingUp, Coffee, Truck, ArrowUp, ArrowDown } from "lucide-react";
 
 const MOCK_MARKET_DATA = {
     coffeeRobusta: {
-        currentPrice: 205.50, // Price in ₹ per kg
+        currentPrice: 384.15, // Price in ₹ per kg
         unit: "₹/kg",
-        trend: 4.2, // Percentage change over last week
+        trend: 3.7, // Percentage change over last week
         status: "UP",
         futures: [
-            { month: "Dec '25", price: 208.00 },
-            { month: "Jan '26", price: 204.50 },
-            { month: "Feb '26", price: 211.50 },
+            { month: "Dec '25", price: 396.00 },
+            { month: "Jan '26", price: 398.50 },
+            { month: "Feb '26", price: 401.20 },
         ],
         demand: "High - Export to Europe",
     },
     blackPepper: {
-        currentPrice: 585.00, // Price in ₹ per kg
+        currentPrice: 691.00, // Price in ₹ per kg
         unit: "₹/kg",
-        trend: -1.5, // Percentage change over last week
+        trend: -2.2, // Percentage change over last week
         status: "DOWN",
         futures: [
-            { month: "Dec '25", price: 580.00 },
-            { month: "Jan '26", price: 595.00 },
-            { month: "Feb '26", price: 590.00 },
+            { month: "Dec '25", price: 695.00 },
+            { month: "Jan '26", price: 694.00 },
+            { month: "Feb '26", price: 697.00 },
         ],
         demand: "Moderate - Domestic Holiday Stocking",
     },

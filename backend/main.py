@@ -6,29 +6,32 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime
-import os
 from typing import List
+import json
 
-# Use direct imports
 import models, schemas, crud, security, agent
 from database import engine, get_db
 
-# This command tells SQLAlchemy to create all the tables if they don't exist
+# Create tables if they don't exist
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:3000", 
+     "http://localhost:5173", # your React app origin
+    # Add more origins if needed, e.g., deployed domain
+]
 # --- Middleware ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# --- Updated Pydantic Model for Request Body ---
-# We REMOVE both userId and farmId because they will come from the token.
+# --- Pydantic Request Model ---
 class AnalysisRequest(BaseModel):
     image: str
     userQuery: str
@@ -44,6 +47,7 @@ def create_user_endpoint(user: schemas.UserCreate, db: Session = Depends(get_db)
     user_dict = {"email": user.email, "name": user.name, "password": user.password}
     return crud.create_user(db=db, user_data=user_dict)
 
+
 @app.post("/api/v1/token")
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = crud.get_user_by_email(db, email=form_data.username)
@@ -52,41 +56,61 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
     access_token = security.create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer"}
 
-# --- SECURE Farm Management Endpoints ---
+
+# --- Farm Endpoints ---
 @app.post("/api/v1/farms/", response_model=schemas.Farm)
 def create_farm_for_user(
     farm: schemas.FarmCreate,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(security.get_current_user)
 ):
-    # farm.location is now a dict {"lat": float, "lon": float}
-    return crud.create_user_farm(db=db, farm=farm, user_id=current_user.id)
+    db_farm = crud.create_user_farm(db=db, farm=farm, user_id=current_user.id)
+    
+    # --- Fix: convert string to dict before validating ---
+    if isinstance(db_farm.location, str):
+        location_dict = json.loads(db_farm.location)
+    else:
+        location_dict = db_farm.location
+
+    db_farm.location = schemas.Location.model_validate(location_dict)
+
+    return db_farm
+
 
 @app.get("/api/v1/farms/me", response_model=List[schemas.Farm])
 def read_my_farms(db: Session = Depends(get_db), current_user: models.User = Depends(security.get_current_user)):
     farms = crud.get_farms_by_user(db, user_id=current_user.id)
+    # Convert all farm locations to Pydantic Location objects
+    for farm in farms:
+        farm.location = schemas.Location(**farm.location)
     return farms
+
 
 # --- Root Endpoint ---
 @app.get("/")
 async def read_root():
     return {"message": "Ceres AI Backend is running!"}
 
-# --- SECURE & DYNAMIC Analysis and History Endpoints ---
+
+# --- Analysis Endpoints ---
 @app.post("/api/v1/analyze")
 async def analyze_image(
     request: AnalysisRequest, 
     db: Session = Depends(get_db), 
     current_user: models.User = Depends(security.get_current_user)
 ):
-    # --- Step 1: Dynamically fetch the user's farm ---
+    # Step 1: Get the user's farm
     db_farm = crud.get_farm_by_owner(db, owner_id=current_user.id)
-    if db_farm is None:
+    if not db_farm:
         raise HTTPException(status_code=404, detail="No farm found for the current user. Please create a farm first.")
 
-    farm_details = {"location": db_farm.location, "crop_type": db_farm.crop_type, "name": db_farm.name}
-    
-    # --- Step 2: Call the agentic function ---
+    farm_details = {
+        "location": db_farm.location,
+        "crop_type": db_farm.crop_type,
+        "name": db_farm.name
+    }
+
+    # Step 2: Call agent
     online_result = agent.run_analysis_agent(
         image_base64=request.image,
         user_query=request.userQuery,
@@ -97,11 +121,11 @@ async def analyze_image(
     if "error" in online_result:
         raise HTTPException(status_code=500, detail=online_result["error"])
 
-    # --- Step 3: Save the result to the database ---
+    # Step 3: Save result to DB
     result_to_save = schemas.AnalysisResultCreate(
         user_query=request.userQuery,
-        offline_disease_name="Unknown", # This should come from the client
-        offline_confidence_score=0.0, # This should come from the client
+        offline_disease_name="Unknown",
+        offline_confidence_score=0.0,
         online_disease_name=online_result.get("diseaseName"),
         online_severity=online_result.get("severity"),
         online_summary=online_result.get("summary"),
@@ -110,10 +134,11 @@ async def analyze_image(
         online_preventative_measures=online_result.get("preventativeMeasures")
     )
     crud.create_analysis_result(db=db, result=result_to_save, user_id=current_user.id, farm_id=db_farm.id)
-    
+
     return {"onlineResult": online_result}
 
-@app.get("/api/v1/history/me", response_model=List)
+
+@app.get("/api/v1/history/me", response_model=List[schemas.AnalysisResult])
 def read_my_analysis_history(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(security.get_current_user)
